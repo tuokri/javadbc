@@ -31,7 +31,7 @@ public class Main {
         try {
 
             connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", "STU31", "delrix123");
+                    "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", "STU31", "KappaKeepo");
 
         } catch(SQLException e) {
 
@@ -136,7 +136,7 @@ public class Main {
     private static void showItems(Connection conn) throws SQLException {
 
         Statement stmt = null;
-        String query = "ALTER USER STU31 IDENTIFIED BY KappaKeepo";
+        String query = "";
 
         try {
 
