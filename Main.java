@@ -1,8 +1,8 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.sql.DriverManager;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 public class Main {
 
@@ -14,7 +14,7 @@ public class Main {
 
             Class.forName("oracle.jdbc.driver.OracleDriver");
 
-        } catch (ClassNotFoundException e) {
+        } catch(ClassNotFoundException e) {
 
             System.out.println("Oracle JDBC Driver not found!");
             e.printStackTrace();
@@ -31,7 +31,7 @@ public class Main {
             connection = DriverManager.getConnection(
                     "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", "STU31", "delrix123");
 
-        } catch (SQLException e) {
+        } catch(SQLException e) {
 
             System.out.println("Connection failed!");
             e.printStackTrace();
@@ -39,7 +39,7 @@ public class Main {
 
         }
 
-        if (connection != null) {
+        if(connection != null) {
 
             System.out.println("Connection to database successful!");
 
@@ -56,58 +56,41 @@ public class Main {
         System.out.println("3: Exit.");
         System.out.println("Make selection and press ENTER.");
 
-        switch (getUserInput()) {
+        switch(getUserInput()) {
 
             case 1:
-                showItems();
+                showItems(connection);
+                exitRoutine(connection);
                 break;
 
             case 2:
-                showCustomers();
+                showCustomers(connection);
+                exitRoutine(connection);
                 break;
 
             case 3:
-                try {
-
-                    connection.close();
-                    System.exit(0);
-
-                } catch (SQLException e) {
-
-                    System.out.println("Error while closing connection!");
-                    e.printStackTrace();
-
-                }
+                exitRoutine(connection);
+                break;
 
             default:
                 System.out.println("Something went wrong!");
-                System.exit(1);
+                exitRoutine(connection);
         }
 
-        try {
-
-            connection.close();
-            System.exit(0);
-
-        } catch (SQLException e) {
-
-            System.out.println("Error while closing connection!");
-            e.printStackTrace();
-
-        }
+        exitRoutine(connection);
     }
 
     private static int getUserInput() {
 
         int choice = 0;
 
-        while (true) {
+        while(true) {
 
             try {
 
                 choice = scan.nextInt();
 
-                if (choice != 1 && choice != 2 && choice != 3) {
+                if(choice != 1 && choice != 2 && choice != 3) {
 
                     scan.nextLine();
                     System.out.println("Please select 1, 2 or 3.");
@@ -119,7 +102,7 @@ public class Main {
 
                 }
 
-            } catch (InputMismatchException ime) {
+            } catch(InputMismatchException ime) {
 
                 System.out.println("Please select 1, 2 or 3.");
                 scan.nextLine();
@@ -130,11 +113,26 @@ public class Main {
         return choice;
     }
 
-    private static void showCustomers() {
+    private static void showCustomers(Connection connection) {
 
     }
 
-    private static void showItems() {
+    private static void showItems(Connection connection) {
 
+    }
+
+    private static void exitRoutine(Connection connection) {
+
+        try {
+
+            connection.close();
+            System.exit(0);
+
+        } catch(SQLException e) {
+
+            System.out.println("Error while closing connection!");
+            e.printStackTrace();
+
+        }
     }
 }
