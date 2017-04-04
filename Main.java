@@ -22,19 +22,18 @@ public class Main {
 
         }
 
-        System.out.println("Oracle JDBC Driver Registered!");
+        System.out.println("Oracle JDBC Driver registered!");
 
         Connection connection = null;
 
         try {
 
-            // STU31@"(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))
             connection = DriverManager.getConnection(
                     "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", "STU31", "delrix123");
 
         } catch (SQLException e) {
 
-            System.out.println("Connection Failed! Check output console");
+            System.out.println("Connection failed!");
             e.printStackTrace();
             return;
 
@@ -42,10 +41,12 @@ public class Main {
 
         if (connection != null) {
 
-            System.out.println("You made it, take control your database now!");
+            System.out.println("Connection to database successful!");
+
         } else {
 
             System.out.println("Failed to make connection!");
+
         }
 
         System.out.print("\n\n");
@@ -63,6 +64,17 @@ public class Main {
                 showCustomers();
                 break;
         }
+
+        try {
+
+            connection.close();
+
+        } catch (SQLException e) {
+
+            System.out.println("Error while closing connection!");
+            e.printStackTrace();
+
+        }
     }
 
     private static int getUserInput() {
@@ -78,15 +90,19 @@ public class Main {
 
                     scan.nextLine();
                     System.out.println("Please select 1 or 2.");
+
                 } else {
 
                     scan.nextLine();
                     break;
+
                 }
+
             } catch (InputMismatchException ime) {
 
                 System.out.println("Please select 1 or 2.");
                 scan.nextLine();
+
             }
         }
 
