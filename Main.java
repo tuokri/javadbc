@@ -1,6 +1,8 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -59,12 +61,30 @@ public class Main {
         switch(getUserInput()) {
 
             case 1:
-                showItems(connection);
+                try {
+
+                    showItems(connection);
+
+                } catch(SQLException e) {
+
+                    e.printStackTrace();
+
+                }
+
                 exitRoutine(connection);
                 break;
 
             case 2:
-                showCustomers(connection);
+                try {
+
+                    showCustomers(connection);
+
+                } catch(SQLException e) {
+
+                    e.printStackTrace();
+
+                }
+
                 exitRoutine(connection);
                 break;
 
@@ -113,19 +133,44 @@ public class Main {
         return choice;
     }
 
-    private static void showCustomers(Connection connection) {
+    private static void showCustomers(Connection conn) throws SQLException {
 
     }
 
-    private static void showItems(Connection connection) {
+    private static void showItems(Connection conn) throws SQLException {
 
-    }
-
-    private static void exitRoutine(Connection connection) {
+        Statement stmt = null;
+        String query = "";
 
         try {
 
-            connection.close();
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while(rs.next()) {
+
+
+            }
+
+        } catch(SQLException e) {
+
+            e.printStackTrace();
+
+        } finally {
+
+            if(stmt != null) {
+
+                stmt.close();
+
+            }
+        }
+    }
+
+    private static void exitRoutine(Connection conn) {
+
+        try {
+
+            conn.close();
             System.exit(0);
 
         } catch(SQLException e) {
