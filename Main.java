@@ -18,7 +18,7 @@ public class Main {
 
             System.out.println("Oracle JDBC Driver not found!");
             e.printStackTrace();
-            return;
+            System.exit(0);
 
         }
 
@@ -35,7 +35,7 @@ public class Main {
 
             System.out.println("Connection failed!");
             e.printStackTrace();
-            return;
+            System.exit(0);
 
         }
 
@@ -46,12 +46,14 @@ public class Main {
         } else {
 
             System.out.println("Failed to make connection!");
+            System.exit(0);
 
         }
 
         System.out.print("\n\n");
         System.out.println("1: Show items.");
         System.out.println("2: Show customers.");
+        System.out.println("3: Exit.");
         System.out.println("Make selection and press ENTER.");
 
         switch (getUserInput()) {
@@ -63,11 +65,29 @@ public class Main {
             case 2:
                 showCustomers();
                 break;
+
+            case 3:
+                try {
+
+                    connection.close();
+                    System.exit(0);
+
+                } catch (SQLException e) {
+
+                    System.out.println("Error while closing connection!");
+                    e.printStackTrace();
+
+                }
+
+            default:
+                System.out.println("Something went wrong!");
+                System.exit(1);
         }
 
         try {
 
             connection.close();
+            System.exit(0);
 
         } catch (SQLException e) {
 
@@ -86,10 +106,11 @@ public class Main {
             try {
 
                 choice = scan.nextInt();
-                if (choice != 1 && choice != 2) {
+
+                if (choice != 1 && choice != 2 && choice != 3) {
 
                     scan.nextLine();
-                    System.out.println("Please select 1 or 2.");
+                    System.out.println("Please select 1, 2 or 3.");
 
                 } else {
 
@@ -100,7 +121,7 @@ public class Main {
 
             } catch (InputMismatchException ime) {
 
-                System.out.println("Please select 1 or 2.");
+                System.out.println("Please select 1, 2 or 3.");
                 scan.nextLine();
 
             }
