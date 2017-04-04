@@ -13,3 +13,7 @@ hs_err_pid*
 
 # IntelliJ Idea project files
 .idea/*
+
+# Oracle JDBC framework
+META-INF/*
+oracle/*
