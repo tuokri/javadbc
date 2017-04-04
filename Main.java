@@ -133,14 +133,10 @@ public class Main {
         return choice;
     }
 
-    private static void showCustomers(Connection conn) throws SQLException {
-
-    }
-
     private static void showItems(Connection conn) throws SQLException {
 
         Statement stmt = null;
-        String query = "";
+        String query = "ALTER USER STU31 IDENTIFIED BY KappaKeepo";
 
         try {
 
@@ -164,6 +160,10 @@ public class Main {
 
             }
         }
+    }
+
+    private static void showCustomers(Connection conn) throws SQLException {
+
     }
 
     private static void exitRoutine(Connection conn) {
