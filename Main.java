@@ -73,7 +73,6 @@ public class Main {
 
                     }
 
-                    exitRoutine(connection);
                     break;
 
                 case 2:
@@ -87,7 +86,6 @@ public class Main {
 
                     }
 
-                    exitRoutine(connection);
                     break;
 
                 case 3:
