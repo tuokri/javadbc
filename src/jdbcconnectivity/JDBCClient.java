@@ -48,6 +48,7 @@ public class JDBCClient {
         String connStr = null;
         boolean useSsh = false;
         File file = new File(sshFileName);
+        System.out.println(file.getAbsolutePath());
 
         if(file.exists()) {
 
