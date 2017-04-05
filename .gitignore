@@ -17,3 +17,8 @@ hs_err_pid*
 # Oracle JDBC framework
 META-INF/*
 oracle/*
+
+# Credentials
+temp.dat
+temp.*
+*.dat
