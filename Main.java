@@ -5,10 +5,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.Properties;
 
 public class Main {
 
     private static final Scanner scan = new Scanner(System.in);
+
 
     public static void main(String[] args) {
 
@@ -26,12 +28,20 @@ public class Main {
 
         System.out.println("Oracle JDBC Driver registered!");
 
+        boolean useSsh;
+        String sshuname = "";
+        String sshpassw = "";
+        String dbuname = "";
+        String dbpassw = "";
+
         Connection connection = null;
 
         try {
 
+            Properties config = new Properties();
+
             connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", "STU31", "KappaKeepo");
+                    "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", dbuname, dbpassw);
 
         } catch(SQLException e) {
 
@@ -145,7 +155,9 @@ public class Main {
 
             while(rs.next()) {
 
-                System.out.println(rs);
+                String year = rs.getString("YEAR");
+
+                System.out.println(year);
 
             }
 
