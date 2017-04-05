@@ -1,187 +1,106 @@
 package jdbcconnectivity;
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.InputStream;
 import java.util.InputMismatchException;
 import java.util.Properties;
 import java.util.Scanner;
 
-public class JDBCClient {
+class JDBCClient {
 
     private static final Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args) {
 
-        try {
+        String sshUnameOulu = null;
+        String sshPasswOulu = null;
+        String sshHostOulu = null;
+        String command = null;
+        Properties config = new Properties();
 
-            Class.forName("oracle.jdbc.driver.OracleDriver");
+        try(BufferedReader configFile = new BufferedReader(new FileReader("config.properties"))) {
 
-        } catch(ClassNotFoundException e) {
-
-            System.out.println("Oracle JDBC Driver not found!");
-            e.printStackTrace();
-            System.exit(0);
-
-        }
-
-        System.out.println("Oracle JDBC Driver registered!");
-
-        int lport = 5050;
-        int rport = 1521;
-        String rhost = "st-cn0001.oulu.fi";
-        String sshFileName = "ssh.dat";
-        String dbFileName = "db.dat";
-        String sshUname = null;
-        String sshPassw = null;
-        String dbUname = null;
-        String dbPassw = null;
-        String connStr = null;
-        boolean useSsh = false;
-        File file = new File(sshFileName);
-        System.out.println(file.getAbsolutePath());
-
-        if(file.exists()) {
-
-            useSsh = true;
-            connStr = "jdbc:oracle:thin:@localhost:" + lport + ":toldb11";
-
-        } else {
-
-            connStr = "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11";
-
-        }
-
-        if(useSsh) {
-
-            try(BufferedReader sshFile = new BufferedReader(new FileReader(sshFileName))) {
-
-                // Username on first line, password on second line.
-                sshUname = sshFile.readLine();
-                sshPassw = sshFile.readLine();
-
-            } catch(IOException ioe) {
-
-                System.out.println("IOException");
-                System.exit(0);
-
-            }
-        }
-
-        try(BufferedReader dbFile = new BufferedReader(new FileReader(dbFileName))) {
-
-            // Username on first line, password on second line.
-            dbUname = dbFile.readLine();
-            dbPassw = dbFile.readLine();
+            config.load(configFile);
+            sshHostOulu = config.getProperty("sshHostOulu");
+            sshUnameOulu = config.getProperty("sshUnameOulu");
+            sshPasswOulu = config.getProperty("sshPasswOulu");
+            command = config.getProperty("command");
 
         } catch(IOException ioe) {
 
-            System.out.println("IOException!");
+            System.out.println("IOException");
             ioe.printStackTrace();
             System.exit(0);
 
         }
 
-        Connection connection = null;
         Session session = null;
 
         try {
 
-            if(useSsh) {
+            Properties jschConfig = new Properties();
+            jschConfig.put("StrictHostKeyChecking", "no"); // Avoid UnknownHostKey issue.
+            JSch jsch = new JSch();
+            session = jsch.getSession(sshUnameOulu, sshHostOulu, 22);
+            session.setPassword(sshPasswOulu);
+            session.setConfig(jschConfig);
+            session.connect();
+            Channel channel = session.openChannel("exec");
 
-                Properties config = new Properties();
-                config.put("StrictHostKeyChecking", "no"); // Avoid UnknownHostKey issue.
-                JSch jsch = new JSch();
-                session = jsch.getSession(sshUname, rhost, 22);
-                session.setPassword(sshPassw);
-                session.setConfig(config);
-                session.connect();
-                int port = session.setPortForwardingL(lport, rhost, rport);
-                System.out.println("localhost:"+ port + " -> " + rhost + ":" + rport);
+            while(true) {
 
+                System.out.print("\n\n");
+                System.out.println("1: Show items.");
+                System.out.println("2: Show customers.");
+                System.out.println("3: Exit.");
+                System.out.println("Make selection and press ENTER.");
+
+                switch(getUserInput()) {
+
+                    case 1:
+                        String result = remoteQuery(command, "SELECT * FROM YEAR", channel);
+                        System.out.println(result);
+                        break;
+
+                    // send query
+                    // wait for response
+                    // print response
+                    case 2:
+                        break;
+
+                    case 3:
+                        return;
+
+                    default:
+                        System.out.println("Something went wrong!");
+                        break;
+
+                }
             }
-
-            connection = DriverManager.getConnection(connStr, dbUname, dbPassw);
 
         } catch(Exception e) {
 
-            System.out.println("Connection failed!");
+            System.out.println("Connection error!");
             e.printStackTrace();
             System.exit(0);
 
-        }
+        } finally {
 
-        if(connection != null) {
+            if(session != null) session.disconnect();
 
-            System.out.println("Connection to database successful!");
-
-        } else {
-
-            System.out.println("Failed to make connection!");
-            System.exit(0);
-
-        }
-
-        while(true) {
-
-            System.out.print("\n\n");
-            System.out.println("1: Show items.");
-            System.out.println("2: Show customers.");
-            System.out.println("3: Exit.");
-            System.out.println("Make selection and press ENTER.");
-
-            switch(getUserInput()) {
-
-                case 1:
-                    try {
-
-                        showItems(connection);
-
-                    } catch(SQLException e) {
-
-                        e.printStackTrace();
-
-                    }
-
-                    break;
-
-                case 2:
-                    try {
-
-                        showCustomers(connection);
-
-                    } catch(SQLException e) {
-
-                        e.printStackTrace();
-
-                    }
-
-                    break;
-
-                case 3:
-                    exitRoutine(connection);
-                    break;
-
-                default:
-                    System.out.println("Something went wrong!");
-                    exitRoutine(connection);
-
-            }
         }
     }
 
     private static int getUserInput() {
 
-        int choice = 0;
+        int choice;
 
         while(true) {
 
@@ -212,54 +131,53 @@ public class JDBCClient {
         return choice;
     }
 
-    private static void showItems(Connection conn) throws SQLException {
+    private static String remoteQuery(String command, String query, Channel channel) {
 
-        Statement stmt = null;
-        String query = "SELECT * FROM YEAR";
-
-        try {
-
-            stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
-            while(rs.next()) {
-
-                String year = rs.getString("YEAR");
-
-                System.out.println(year);
-
-            }
-
-        } catch(SQLException e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            if(stmt != null) {
-
-                stmt.close();
-
-            }
-        }
-    }
-
-    private static void showCustomers(Connection conn) throws SQLException {
-
-    }
-
-    private static void exitRoutine(Connection conn) {
+        StringBuilder resultBuilder = new StringBuilder();
+        byte[] tmp = new byte[1024];
 
         try {
 
-            conn.close();
-            System.exit(0);
+            String finalCommand = command + " " + query;
+            ((ChannelExec) channel).setCommand(finalCommand);
+            InputStream in = channel.getInputStream();
+            channel.connect();
 
-        } catch(SQLException e) {
+            while(true) {
 
-            System.out.println("Error while closing connection!");
+                while(in.available() > 0) {
+
+                    int i = in.read(tmp, 0, 1024);
+                    if(i < 0) break;
+                    resultBuilder.append((new String(tmp, 0, i)));
+
+                }
+
+                if(channel.isClosed()) {
+
+                    if(in.available() > 0) continue;
+                    System.out.println("exit-status: " + channel.getExitStatus());
+                    break;
+
+                }
+
+                try {
+
+                    Thread.sleep(150);
+
+                } catch(Exception ee) {
+
+                    ee.printStackTrace();
+
+                }
+            }
+
+        } catch(Exception e) {
+
             e.printStackTrace();
 
         }
+
+        return resultBuilder.toString();
     }
 }

@@ -1,26 +1,55 @@
 package jdbcconnectivity;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
-public class JDBCResponder {
+class JDBCResponder {
 
     public static void main(String[] args) {
 
-        Properties config = new Properties();
+        String query = null;
 
-        String sshUnameOulu = null;
-        String sshPasswOulu = null;
-        String sshHostOulu = null;
+        if(args.length == 0) {
+
+            System.out.println("No command line argument specified. Exiting.");
+            System.exit(0);
+
+        } else {
+
+            query = args[0];
+
+        }
+
+        try {
+
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+
+        } catch(ClassNotFoundException e) {
+
+            System.out.println("Oracle JDBC Driver not found!");
+            e.printStackTrace();
+            System.exit(0);
+
+        }
+
+        Properties config = new Properties();
+        String dbConnStr = null;
+        String dbUname = null;
+        String dbPassw = null;
 
         try(BufferedReader configFile = new BufferedReader(new FileReader("config.properties"))) {
 
             config.load(configFile);
-            sshUnameOulu = config.getProperty("sshUnameOulu");
-            sshPasswOulu = config.getProperty("sshPasswOulu");
-            sshHostOulu = config.getProperty("sshHostOulu");
+            dbConnStr = config.getProperty("dbConnStr");
 
         } catch(IOException ioe) {
 
@@ -29,5 +58,60 @@ public class JDBCResponder {
             System.exit(0);
 
         }
+
+        ResultSet rs = null;
+
+        try(Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw)) {
+
+            try(Statement stmt = connection.createStatement()) {
+
+                rs = stmt.executeQuery(query);
+
+            } catch(SQLException e) {
+
+                System.out.println("SQL error!");
+                e.printStackTrace();
+
+            }
+
+        } catch(Exception e) {
+
+            System.out.println("Error!");
+            e.printStackTrace();
+
+        }
+
+        try(Socket socket = new Socket()) {
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+
+            while(rs.next()) {
+
+                String yearName = rs.getString("YEAR");
+
+                String resultString = new String(yearName + " lul ");
+
+                out.writeBytes(resultString);
+
+            }
+
+            out.writeByte('\n');
+
+        } catch(Exception e) {
+
+            System.out.println("Error!");
+            e.printStackTrace();
+
+        }
+
+        // send back response
+    }
+
+    private static void showItems(Connection conn) throws SQLException {
+
+    }
+
+    private static void showCustomers(Connection conn) throws SQLException {
+
     }
 }
