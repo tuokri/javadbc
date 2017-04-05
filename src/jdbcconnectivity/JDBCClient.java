@@ -1,5 +1,8 @@
 package jdbcconnectivity;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,9 +15,6 @@ import java.sql.Statement;
 import java.util.InputMismatchException;
 import java.util.Properties;
 import java.util.Scanner;
-
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 
 public class JDBCClient {
 
