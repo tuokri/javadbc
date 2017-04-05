@@ -22,3 +22,6 @@ oracle/*
 temp.dat
 temp.*
 *.dat
+
+# Zip packages
+*.zip
