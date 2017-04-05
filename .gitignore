@@ -29,3 +29,6 @@ temp.*
 
 # Dependencies
 dep/*
+
+# Compiled stuff
+out/*
