@@ -1,16 +1,24 @@
+package JDBCConnectivity;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.InputMismatchException;
-import java.util.Scanner;
 import java.util.Properties;
+import java.util.Scanner;
+
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 
 public class Main {
 
     private static final Scanner scan = new Scanner(System.in);
-
 
     public static void main(String[] args) {
 
@@ -28,22 +36,81 @@ public class Main {
 
         System.out.println("Oracle JDBC Driver registered!");
 
-        boolean useSsh;
-        String sshuname = "";
-        String sshpassw = "";
-        String dbuname = "";
-        String dbpassw = "";
+        int lport = 5050;
+        int rport = 1521;
+        String rhost = "st-cn0001.oulu.fi";
+        String sshFileName = "ssh.dat";
+        String dbFileName = "db.dat";
+        String sshUname = null;
+        String sshPassw = null;
+        String dbUname = null;
+        String dbPassw = null;
+        String connStr = null;
+        boolean useSsh = false;
+        File file = new File(sshFileName);
+
+        if(file.exists()) {
+
+            useSsh = true;
+            connStr = "jdbc:oracle:thin:@localhost:" + lport + ":toldb11";
+
+        } else {
+
+            connStr = "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11";
+
+        }
+
+        if(useSsh) {
+
+            try(BufferedReader sshFile = new BufferedReader(new FileReader(sshFileName))) {
+
+                // Username on first line, password on second line.
+                sshUname = sshFile.readLine();
+                sshPassw = sshFile.readLine();
+
+            } catch(IOException ioe) {
+
+                System.out.println("IOException");
+                System.exit(0);
+
+            }
+        }
+
+        try(BufferedReader dbFile = new BufferedReader(new FileReader(dbFileName))) {
+
+            // Username on first line, password on second line.
+            dbUname = dbFile.readLine();
+            dbPassw = dbFile.readLine();
+
+        } catch(IOException ioe) {
+
+            System.out.println("IOException!");
+            System.exit(0);
+
+        }
 
         Connection connection = null;
+        Session session = null;
 
         try {
 
-            Properties config = new Properties();
+            if(useSsh) {
 
-            connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@toldb.oulu.fi:1521:toldb11", dbuname, dbpassw);
+                Properties config = new Properties();
+                config.put("StrictHostKeyChecking", "no"); // Avoid UnknownHostKey issue.
+                JSch jsch = new JSch();
+                session = jsch.getSession(sshUname, rhost, 22);
+                session.setPassword(sshPassw);
+                session.setConfig(config);
+                session.connect();
+                int port = session.setPortForwardingL(lport, rhost, rport);
+                System.out.println("localhost:"+ port + " -> " + rhost + ":" + rport);
 
-        } catch(SQLException e) {
+            }
+
+            connection = DriverManager.getConnection(connStr, dbUname, dbPassw);
+
+        } catch(Exception e) {
 
             System.out.println("Connection failed!");
             e.printStackTrace();

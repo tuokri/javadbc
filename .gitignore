@@ -26,3 +26,6 @@ temp.*
 
 # Zip packages
 *.zip
+
+# Dependencies
+dep/*
