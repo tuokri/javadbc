@@ -52,52 +52,54 @@ public class Main {
 
         }
 
-        System.out.print("\n\n");
-        System.out.println("1: Show items.");
-        System.out.println("2: Show customers.");
-        System.out.println("3: Exit.");
-        System.out.println("Make selection and press ENTER.");
+        while(true) {
 
-        switch(getUserInput()) {
+            System.out.print("\n\n");
+            System.out.println("1: Show items.");
+            System.out.println("2: Show customers.");
+            System.out.println("3: Exit.");
+            System.out.println("Make selection and press ENTER.");
 
-            case 1:
-                try {
+            switch(getUserInput()) {
 
-                    showItems(connection);
+                case 1:
+                    try {
 
-                } catch(SQLException e) {
+                        showItems(connection);
 
-                    e.printStackTrace();
+                    } catch(SQLException e) {
 
-                }
+                        e.printStackTrace();
 
-                exitRoutine(connection);
-                break;
+                    }
 
-            case 2:
-                try {
+                    exitRoutine(connection);
+                    break;
 
-                    showCustomers(connection);
+                case 2:
+                    try {
 
-                } catch(SQLException e) {
+                        showCustomers(connection);
 
-                    e.printStackTrace();
+                    } catch(SQLException e) {
 
-                }
+                        e.printStackTrace();
 
-                exitRoutine(connection);
-                break;
+                    }
 
-            case 3:
-                exitRoutine(connection);
-                break;
+                    exitRoutine(connection);
+                    break;
 
-            default:
-                System.out.println("Something went wrong!");
-                exitRoutine(connection);
+                case 3:
+                    exitRoutine(connection);
+                    break;
+
+                default:
+                    System.out.println("Something went wrong!");
+                    exitRoutine(connection);
+
+            }
         }
-
-        exitRoutine(connection);
     }
 
     private static int getUserInput() {
@@ -136,7 +138,7 @@ public class Main {
     private static void showItems(Connection conn) throws SQLException {
 
         Statement stmt = null;
-        String query = "";
+        String query = "SELECT * FROM YEAR";
 
         try {
 
@@ -145,6 +147,7 @@ public class Main {
 
             while(rs.next()) {
 
+                System.out.println(rs);
 
             }
 
