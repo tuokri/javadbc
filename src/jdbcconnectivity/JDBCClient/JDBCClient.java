@@ -1,4 +1,4 @@
-package JDBCConnectivity;
+package jdbcconnectivity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.Scanner;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
-public class Main {
+public class JDBCClient {
 
     private static final Scanner scan = new Scanner(System.in);
 
@@ -85,6 +85,7 @@ public class Main {
         } catch(IOException ioe) {
 
             System.out.println("IOException!");
+            ioe.printStackTrace();
             System.exit(0);
 
         }
