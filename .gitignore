@@ -23,6 +23,7 @@ oracle/*
 temp.dat
 temp.*
 *.dat
+config.properties
 
 # Zip packages
 *.zip
