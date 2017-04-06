@@ -53,6 +53,7 @@ class JDBCClient {
             session.setConfig(jschConfig);
             session.connect();
             Channel channel = session.openChannel("exec");
+            String result = null;
 
             while(true) {
 
@@ -65,14 +66,13 @@ class JDBCClient {
                 switch(getUserInput()) {
 
                     case 1:
-                        String result = remoteQuery(command, "SELECT * FROM YEAR", channel);
+                        result = remoteQuery(command, "SELECT * FROM YEAR", channel);
                         System.out.println(result);
                         break;
 
-                    // send query
-                    // wait for response
-                    // print response
                     case 2:
+                        result = remoteQuery(command, "SELECT * FROM YEAR", channel);
+                        System.out.println(result);
                         break;
 
                     case 3:
@@ -138,7 +138,8 @@ class JDBCClient {
 
         try {
 
-            String finalCommand = command + " " + query;
+            String finalCommand = command + " " + "\"" + query + "\"";
+            System.out.println("finalCommand: " + finalCommand);
             ((ChannelExec) channel).setCommand(finalCommand);
             InputStream in = channel.getInputStream();
             channel.connect();
@@ -156,7 +157,7 @@ class JDBCClient {
                 if(channel.isClosed()) {
 
                     if(in.available() > 0) continue;
-                    System.out.println("exit-status: " + channel.getExitStatus());
+                    System.out.println("Channel exit-status: " + channel.getExitStatus());
                     break;
 
                 }

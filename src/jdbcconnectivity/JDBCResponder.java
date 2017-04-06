@@ -50,6 +50,8 @@ class JDBCResponder {
 
             config.load(configFile);
             dbConnStr = config.getProperty("dbConnStr");
+            dbUname = config.getProperty("dbUname");
+            dbPassw = config.getProperty("dbPassw");
 
         } catch(IOException ioe) {
 
