@@ -71,8 +71,9 @@ class JDBCResponder {
         ResultSet rs = null;
         try(Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw)) {
 
-            try(Statement stmt = connection.createStatement()) {
+            try{
 
+                Statement stmt = connection.createStatement();
                 // Query is provided as command line argument.
                 System.out.println("QUERY : " + query);
                 rs = stmt.executeQuery(query);
@@ -96,8 +97,7 @@ class JDBCResponder {
             while(rs.next()) {
 
                 String yearName = rs.getString("YEAR");
-                String resultString = new String(yearName + " lul ");
-                System.out.println(resultString);
+                System.out.println(yearName);
 
             }
 
