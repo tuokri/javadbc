@@ -53,31 +53,4 @@ public class PrintUtils {
         out.print(color.getCode() + msg + Color.RESET.getCode());
 
     }
-
-    private class ColorDoesNotExistException extends Exception {
-
-        public ColorDoesNotExistException() {
-
-            super();
-
-        }
-
-        public ColorDoesNotExistException(String message) {
-
-            super(message);
-
-        }
-
-        public ColorDoesNotExistException(String message, Throwable cause) {
-
-            super(message, cause);
-
-        }
-
-        public ColorDoesNotExistException(Throwable cause) {
-
-            super(cause);
-
-        }
-    }
 }
