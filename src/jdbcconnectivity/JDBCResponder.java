@@ -74,6 +74,7 @@ class JDBCResponder {
             try(Statement stmt = connection.createStatement()) {
 
                 // Query is provided as command line argument.
+                System.out.println("QUERY : " + query);
                 rs = stmt.executeQuery(query);
 
             } catch(SQLException e) {
