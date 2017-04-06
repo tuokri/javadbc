@@ -42,13 +42,13 @@ public class PrintUtils {
 
     }
 
-    public static void printlnColor(String msg, Color color, PrintStream out) throws ColorDoesNotExistException {
+    public static void printlnColor(String msg, Color color, PrintStream out) {
 
         out.println(color.getCode() + msg + Color.RESET.getCode());
 
     }
 
-    public static void printColor(String msg, Color color, PrintStream out) throws ColorDoesNotExistException {
+    public static void printColor(String msg, Color color, PrintStream out) {
 
         out.print(color.getCode() + msg + Color.RESET.getCode());
 
