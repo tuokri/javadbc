@@ -1,10 +1,6 @@
-package jdbcconnectivity;
-
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -12,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-class JDBCResponder {
+public class JDBCResponder {
 
     public static void main(String[] args) {
 
@@ -47,8 +43,6 @@ class JDBCResponder {
         String dbConnStr = null;
         String dbUname = null;
         String dbPassw = null;
-        String homeAddress = null;
-        int portAtHome = 0;
 
         try(BufferedReader configFile = new BufferedReader(new FileReader("config.properties"))) {
 
@@ -56,8 +50,6 @@ class JDBCResponder {
             dbConnStr = config.getProperty("dbConnStr");
             dbUname = config.getProperty("dbUname");
             dbPassw = config.getProperty("dbPassw");
-            homeAddress = config.getProperty("homeAddress");
-            portAtHome = Integer.parseInt(config.getProperty("portAtHome"));
 
         } catch(IOException ioe) {
 
@@ -109,44 +101,5 @@ class JDBCResponder {
             e.printStackTrace();
 
         }
-
-
-        /*
-        System.out.println("Phoning home.");
-        try(Socket socket = new Socket(homeAddress, portAtHome)) {
-
-            System.out.println("SOCKET: " + homeAddress + ":" + portAtHome);
-
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
-            while(rs.next()) {
-
-                System.out.println("WRITING OUT!");
-
-                String yearName = rs.getString("YEAR");
-
-                String resultString = new String(yearName + " lul ");
-
-                out.writeBytes(resultString);
-
-            }
-
-            out.writeByte('\n');
-
-        } catch(Exception e) {
-
-            System.out.println("Error!");
-            e.printStackTrace();
-
-        }
-        */
-    }
-
-    private static void showItems(Connection conn) throws SQLException {
-
-    }
-
-    private static void showCustomers(Connection conn) throws SQLException {
-
     }
 }
