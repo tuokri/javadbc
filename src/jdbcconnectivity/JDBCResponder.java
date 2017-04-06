@@ -69,7 +69,9 @@ class JDBCResponder {
 
         System.out.println("Executing query.");
         ResultSet rs = null;
-        try(Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw)) {
+        try{
+
+            Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
 
             try{
 
