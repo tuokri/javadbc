@@ -3,12 +3,17 @@ package jdbcconnectivity;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.ServerSocketFactory;
 import com.jcraft.jsch.Session;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.InputMismatchException;
 import java.util.Properties;
 import java.util.Scanner;
@@ -23,6 +28,7 @@ class JDBCClient {
         String sshPasswOulu = null;
         String sshHostOulu = null;
         String command = null;
+        int portAtHome = 0;
         Properties config = new Properties();
 
         try(BufferedReader configFile = new BufferedReader(new FileReader("config.properties"))) {
@@ -31,6 +37,7 @@ class JDBCClient {
             sshHostOulu = config.getProperty("sshHostOulu");
             sshUnameOulu = config.getProperty("sshUnameOulu");
             sshPasswOulu = config.getProperty("sshPasswOulu");
+            portAtHome = Integer.parseInt(config.getProperty("portAtHome"));
             command = config.getProperty("command");
 
         } catch(IOException ioe) {
@@ -66,12 +73,12 @@ class JDBCClient {
                 switch(getUserInput()) {
 
                     case 1:
-                        result = remoteQuery(command, "SELECT * FROM YEAR", channel);
+                        result = remoteQuery(command, "SELECT * FROM YEAR", channel, portAtHome);
                         System.out.println(result);
                         break;
 
                     case 2:
-                        result = remoteQuery(command, "SELECT * FROM YEAR", channel);
+                        result = remoteQuery(command, "SELECT * FROM YEAR", channel, portAtHome);
                         System.out.println(result);
                         break;
 
@@ -131,7 +138,7 @@ class JDBCClient {
         return choice;
     }
 
-    private static String remoteQuery(String command, String query, Channel channel) {
+    private static String remoteQuery(String command, String query, Channel channel, int port) {
 
         StringBuilder resultBuilder = new StringBuilder();
         byte[] tmp = new byte[1024];
@@ -141,14 +148,15 @@ class JDBCClient {
             String finalCommand = command + " " + "\"" + query + "\"";
             System.out.println("finalCommand: " + finalCommand);
             ((ChannelExec) channel).setCommand(finalCommand);
-            InputStream in = channel.getInputStream();
+            InputStream channelIn = channel.getInputStream();
             channel.connect();
 
+            // Read channel response.
             while(true) {
 
-                while(in.available() > 0) {
+                while(channelIn.available() > 0) {
 
-                    int i = in.read(tmp, 0, 1024);
+                    int i = channelIn.read(tmp, 0, 1024);
                     if(i < 0) break;
                     resultBuilder.append((new String(tmp, 0, i)));
 
@@ -156,7 +164,7 @@ class JDBCClient {
 
                 if(channel.isClosed()) {
 
-                    if(in.available() > 0) continue;
+                    if(channelIn.available() > 0) continue;
                     System.out.println("Channel exit-status: " + channel.getExitStatus());
                     break;
 
@@ -171,6 +179,31 @@ class JDBCClient {
                     ee.printStackTrace();
 
                 }
+            }
+
+            // Read SQL query response.
+            // Open ServerSocket at portAtHome.
+            try(ServerSocket listener = new ServerSocket(port)) {
+
+                while(true) {
+
+                    try(Socket socket = listener.accept()) {
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        System.out.println(in.readLine());
+
+                    } catch(Exception e) {
+
+                        e.printStackTrace();
+
+                    }
+                }
+
+            } catch(Exception e) {
+
+                System.out.println("Exception!");
+                e.printStackTrace();
+
             }
 
         } catch(Exception e) {

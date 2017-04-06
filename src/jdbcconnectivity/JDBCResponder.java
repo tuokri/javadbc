@@ -45,6 +45,8 @@ class JDBCResponder {
         String dbConnStr = null;
         String dbUname = null;
         String dbPassw = null;
+        String homeAddress = null;
+        int portAtHome = 0;
 
         try(BufferedReader configFile = new BufferedReader(new FileReader("config.properties"))) {
 
@@ -52,6 +54,8 @@ class JDBCResponder {
             dbConnStr = config.getProperty("dbConnStr");
             dbUname = config.getProperty("dbUname");
             dbPassw = config.getProperty("dbPassw");
+            homeAddress = config.getProperty("homeAddress");
+            portAtHome = Integer.parseInt(config.getProperty("portAtHome"));
 
         } catch(IOException ioe) {
 
@@ -67,6 +71,7 @@ class JDBCResponder {
 
             try(Statement stmt = connection.createStatement()) {
 
+                // Query is provided as command line argument.
                 rs = stmt.executeQuery(query);
 
             } catch(SQLException e) {
@@ -83,7 +88,7 @@ class JDBCResponder {
 
         }
 
-        try(Socket socket = new Socket()) {
+        try(Socket socket = new Socket(homeAddress, portAtHome)) {
 
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
@@ -105,8 +110,6 @@ class JDBCResponder {
             e.printStackTrace();
 
         }
-
-        // send back response
     }
 
     private static void showItems(Connection conn) throws SQLException {
