@@ -10,8 +10,11 @@ import java.util.Scanner;
 
 public class JDBCClient {
 
+    private static final int bufferSize = 2048;
     private static final Scanner sc = new Scanner(System.in);
     private static final String[] hosts = {"st-cn0001.oulu.fi", "st-cn0002.oulu.fi", "st-cn0003.oulu.fi"};
+    private static final String info = "You need to use your ITEE login, not Paju login.\n" +
+            "Your ITEE credentials are the ones used in ITEE computer classes.";
 
     public static void main(String[] args) {
 
@@ -20,6 +23,9 @@ public class JDBCClient {
         String sshHost;
 
         try {
+
+            JFrame welcomeFrame = new JFrame("Info Frame");
+            JOptionPane.showMessageDialog(null, info, "Info", JOptionPane.INFORMATION_MESSAGE);
 
             JFrame sshUnameFrame = new JFrame("Enter ITEE Username Prompt");
             sshUname = JOptionPane.showInputDialog(sshUnameFrame, "Enter ITEE username.",
@@ -56,12 +62,12 @@ public class JDBCClient {
                 InputStream in = channel.getInputStream();
                 channel.connect();
 
-                byte[] tmp = new byte[1024];
+                byte[] tmp = new byte[bufferSize];
                 while(true) {
 
                     while(in.available() > 0) {
 
-                        int i = in.read(tmp, 0, 1024);
+                        int i = in.read(tmp, 0, bufferSize);
                         if(i < 0) break;
                         PrintUtils.printlnColor(new String(tmp, 0, i), PrintUtils.Color.GREEN, System.out);
 
@@ -70,7 +76,15 @@ public class JDBCClient {
                     if(channel.isClosed()) {
 
                         if(in.available() > 0) continue;
-                        System.out.println("Channel exit-status: " + channel.getExitStatus());
+
+                        int status = channel.getExitStatus();
+                        if(status != 0) {
+
+                            PrintUtils.printlnColor("Channel error! Query might not have been completed succesfully",
+                                    PrintUtils.Color.RED, System.out);
+
+                        }
+
                         break;
 
                     }
