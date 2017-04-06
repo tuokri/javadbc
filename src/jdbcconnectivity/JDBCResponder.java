@@ -90,13 +90,23 @@ class JDBCResponder {
 
         }
 
-        while(rs.next()) {
+        try {
 
-            String yearName = rs.getString("YEAR");
-            String resultString = new String(yearName + " lul ");
-            System.out.println(resultString);
+            while(rs.next()) {
+
+                String yearName = rs.getString("YEAR");
+                String resultString = new String(yearName + " lul ");
+                System.out.println(resultString);
+
+            }
+
+        } catch(SQLException e) {
+
+            System.out.println("SQLException!");
+            e.printStackTrace();
 
         }
+
 
         /*
         System.out.println("Phoning home.");
