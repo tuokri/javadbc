@@ -4,7 +4,7 @@ import com.jcraft.jsch.UserInfo;
 import javax.swing.*;
 import java.awt.*;
 
-public class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+public class SshUserInfo implements UserInfo, UIKeyboardInteractive {
 
     String passwd;
     JTextField passwordField = (JTextField) new JPasswordField(20);
@@ -47,9 +47,9 @@ public class MyUserInfo implements UserInfo, UIKeyboardInteractive {
     public boolean promptPassword(String message) {
 
         Object[] ob = {passwordField};
-        int result =
-                JOptionPane.showConfirmDialog(null, ob, message,
-                        JOptionPane.OK_CANCEL_OPTION);
+
+        int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+
         if(result == JOptionPane.OK_OPTION) {
 
             passwd = passwordField.getText();
@@ -114,6 +114,7 @@ public class MyUserInfo implements UserInfo, UIKeyboardInteractive {
                 == JOptionPane.OK_OPTION) {
 
                     String[] response = new String[prompt.length];
+
                     for(int i = 0; i < prompt.length; i++) {
 
                         response[i] = texts[i].getText();
