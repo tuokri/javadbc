@@ -93,9 +93,13 @@ class JDBCResponder {
         System.out.println("Phoning home.");
         try(Socket socket = new Socket(homeAddress, portAtHome)) {
 
+            System.out.println("SOCKET: " + homeAddress + ":" + portAtHome);
+
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
             while(rs.next()) {
+
+                System.out.println("WRITING OUT!");
 
                 String yearName = rs.getString("YEAR");
 

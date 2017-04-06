@@ -3,7 +3,6 @@ package jdbcconnectivity;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.ServerSocketFactory;
 import com.jcraft.jsch.Session;
 
 import java.io.BufferedReader;
@@ -11,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.InputMismatchException;
@@ -141,6 +139,7 @@ class JDBCClient {
     private static String remoteQuery(String command, String query, Channel channel, int port) {
 
         StringBuilder resultBuilder = new StringBuilder();
+        StringBuilder channelResponseBuilder = new StringBuilder();
         byte[] tmp = new byte[1024];
 
         try {
@@ -158,7 +157,7 @@ class JDBCClient {
 
                     int i = channelIn.read(tmp, 0, 1024);
                     if(i < 0) break;
-                    resultBuilder.append((new String(tmp, 0, i)));
+                    channelResponseBuilder.append((new String(tmp, 0, i)));
 
                 }
 
@@ -166,6 +165,7 @@ class JDBCClient {
 
                     if(channelIn.available() > 0) continue;
                     System.out.println("Channel exit-status: " + channel.getExitStatus());
+                    System.out.println("Channel response: " + channelResponseBuilder.toString());
                     break;
 
                 }
