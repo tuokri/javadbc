@@ -182,6 +182,7 @@ class JDBCClient {
                 }
             }
 
+            /*
             // Read SQL query response.
             // Open ServerSocket at portAtHome.
             System.out.println("Opening listener socket at " + port + ".");
@@ -215,6 +216,7 @@ class JDBCClient {
                 e.printStackTrace();
 
             }
+            */
 
         } catch(Exception e) {
 
