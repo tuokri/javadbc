@@ -33,3 +33,6 @@ dep/*
 
 # Compiled stuff
 out/*
+
+# SCP test files
+test.txt
