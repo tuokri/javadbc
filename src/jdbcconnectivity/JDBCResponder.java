@@ -41,6 +41,8 @@ class JDBCResponder {
 
         }
 
+        System.out.println("Oracle JDBC Driver registered!");
+
         Properties config = new Properties();
         String dbConnStr = null;
         String dbUname = null;
@@ -65,8 +67,8 @@ class JDBCResponder {
 
         }
 
+        System.out.println("Executing query.");
         ResultSet rs = null;
-
         try(Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw)) {
 
             try(Statement stmt = connection.createStatement()) {
@@ -88,6 +90,7 @@ class JDBCResponder {
 
         }
 
+        System.out.println("Phoning home.");
         try(Socket socket = new Socket(homeAddress, portAtHome)) {
 
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());

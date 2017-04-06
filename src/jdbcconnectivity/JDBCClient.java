@@ -183,6 +183,7 @@ class JDBCClient {
 
             // Read SQL query response.
             // Open ServerSocket at portAtHome.
+            System.out.println("Opening listener socket at " + port + ".");
             try(ServerSocket listener = new ServerSocket(port)) {
 
                 while(true) {
@@ -190,10 +191,18 @@ class JDBCClient {
                     try(Socket socket = listener.accept()) {
 
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        System.out.println(in.readLine());
+                        String line = null;
+
+                        while((line = in.readLine()) != null) {
+
+                            System.out.println(line);
+
+                        }
+
 
                     } catch(Exception e) {
 
+                        System.out.println("Exception!");
                         e.printStackTrace();
 
                     }
@@ -208,6 +217,7 @@ class JDBCClient {
 
         } catch(Exception e) {
 
+            System.out.println("Exception!");
             e.printStackTrace();
 
         }
