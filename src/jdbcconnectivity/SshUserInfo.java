@@ -7,7 +7,7 @@ import java.awt.*;
 public class SshUserInfo implements UserInfo, UIKeyboardInteractive {
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = (JTextField) new JPasswordField(35);
     final GridBagConstraints gbc =
             new GridBagConstraints(0, 0, 1, 1, 1, 1,
                     GridBagConstraints.NORTHWEST,
@@ -96,11 +96,11 @@ public class SshUserInfo implements UserInfo, UIKeyboardInteractive {
             gbc.weighty = 1;
             if(echo[i]) {
 
-                texts[i] = new JTextField(20);
+                texts[i] = new JTextField(35);
 
             } else {
 
-                texts[i] = new JPasswordField(20);
+                texts[i] = new JPasswordField(35);
 
             }
             panel.add(texts[i], gbc);
