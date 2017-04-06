@@ -14,17 +14,6 @@ public class JDBCResponder {
 
         String query = null;
 
-        if(args.length == 0) {
-
-            System.out.println("No command line argument specified. Exiting.");
-            System.exit(0);
-
-        } else {
-
-            query = args[0];
-
-        }
-
         try {
 
             Class.forName("oracle.jdbc.driver.OracleDriver");
