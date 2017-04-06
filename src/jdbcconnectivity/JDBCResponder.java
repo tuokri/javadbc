@@ -90,6 +90,15 @@ class JDBCResponder {
 
         }
 
+        while(rs.next()) {
+
+            String yearName = rs.getString("YEAR");
+            String resultString = new String(yearName + " lul ");
+            System.out.println(resultString);
+
+        }
+
+        /*
         System.out.println("Phoning home.");
         try(Socket socket = new Socket(homeAddress, portAtHome)) {
 
@@ -117,6 +126,7 @@ class JDBCResponder {
             e.printStackTrace();
 
         }
+        */
     }
 
     private static void showItems(Connection conn) throws SQLException {

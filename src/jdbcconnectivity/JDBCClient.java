@@ -158,6 +158,7 @@ class JDBCClient {
                     int i = channelIn.read(tmp, 0, 1024);
                     if(i < 0) break;
                     channelResponseBuilder.append((new String(tmp, 0, i)));
+                    System.out.println("Building response!");
 
                 }
 
