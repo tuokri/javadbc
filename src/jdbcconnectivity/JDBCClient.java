@@ -35,9 +35,6 @@ public class JDBCClient {
 
         try {
 
-            // USER INTERFACE
-            // -----------------------------------------------------------------------------------------------------
-
             JFrame welcomeFrame = new JFrame("Info Frame");
             JOptionPane.showMessageDialog(welcomeFrame, info, "Info", JOptionPane.INFORMATION_MESSAGE);
 
@@ -52,34 +49,18 @@ public class JDBCClient {
                     JOptionPane.QUESTION_MESSAGE, null, hosts, hosts[0]);
             if(sshHost == null) System.exit(0);
 
-            // *****************************************************************************************************
-
-            // SSH SESSION
-            // -----------------------------------------------------------------------------------------------------
-
             Session session = jsch.getSession(sshUname, sshHost, 22);
             UserInfo userInfo = new SshUserInfo();
             session.setUserInfo(userInfo);
             session.connect();
             PrintUtils.printlnColor("ssh " + sshUname + "@" + sshHost, PrintUtils.Color.YELLOW, System.out);
 
-            // *****************************************************************************************************
-
-            // MKDIR
-            // -----------------------------------------------------------------------------------------------------
-
-            // IF DIRECTORY DOES NOT EXISTS, CREATE IT
             String mkdirCommand = "mkdir " + "/home/" + sshUname + "/jdbcresponder";
             Channel mkdirChannel = session.openChannel("exec");
             ((ChannelExec) mkdirChannel).setCommand(mkdirCommand);
             mkdirChannel.connect();
             mkdirChannel.disconnect();
             PrintUtils.printlnColor(mkdirCommand, PrintUtils.Color.YELLOW, System.out);
-
-            // *****************************************************************************************************
-
-            // SCP
-            // -----------------------------------------------------------------------------------------------------
 
             String rfile = "/home/" + sshUname + "/jdbcresponder/" + lfile;
             boolean ptimestamp = true;
@@ -164,8 +145,6 @@ public class JDBCClient {
             scpChannel.disconnect();
             PrintUtils.printlnColor("SCP complete, responder delivered.", PrintUtils.Color.YELLOW, System.out);
 
-            // *****************************************************************************************************
-
             JFrame dbConnStrFrame = new JFrame("Database Connection");
             dbUname = JOptionPane.showInputDialog(dbConnStrFrame, "Enter your database username (STUXX).");
             if(dbUname == null) System.exit(0);
@@ -188,12 +167,11 @@ public class JDBCClient {
 
             }
 
-            // BEGIN INPUT LOOP FOR QUERYING DATABASE!
-
             while(true) {
 
+                PrintUtils.printlnColor("Input database query and press ENTER.", PrintUtils.Color.BLUE, System.out);
                 String query = sc.nextLine();
-                String command = "java -jar " + rfile + " \"" + dbConnStr + "\" " + dbUname + " " + dbPassw + " " + query;
+                String command = "java -jar " + rfile + " \"" + dbConnStr + "\" " + dbUname + " " + dbPassw + " \"" + query + "\"";
                 Channel channel = session.openChannel("exec");
                 ((ChannelExec) channel).setCommand(command);
                 InputStream in = channel.getInputStream();
