@@ -1,3 +1,7 @@
+import java.io.DataInputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,7 +12,18 @@ import java.sql.Statement;
 
 public class JDBCResponder {
 
+    private static final int portMin = 5000;
+    private static final int portMax = 15000;
+
     public static void main(String[] args) {
+
+        int portAmount = portMax - portMin + 1;
+        int[] ports = new int[portAmount];
+        for(int i = 0; i < portAmount; i++) {
+
+            ports[i] = portMin + i;
+
+        }
 
         String query = null;
         String dbConnStr = null;
@@ -37,16 +52,59 @@ public class JDBCResponder {
 
         } catch(Exception e) {
 
-            e.printStackTrace();
+            System.out.println(e);
             System.exit(0);
 
         }
 
+        ServerSocket server = null;
+        Socket client = null;
         ResultSet rs = null;
         try {
 
-            // "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))"
             Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
+            System.out.println("JDBCResponder: DBCONNOK");
+
+            for (int port : ports) {
+
+                try {
+
+                    server = new ServerSocket(port);
+                    System.out.println("JDBCResponder: PORT " + port);
+                    break;
+
+                } catch(Exception e) {
+
+                    // Port was closed.
+
+                }
+            }
+
+            byte[] messageByte = new byte[1000];
+            boolean end = false;
+            String messageString = "";
+
+            client = server.accept();
+
+            DataInputStream clientIn = new DataInputStream(client.getInputStream());
+            int bytesRead = 0;
+
+            messageByte[0] = clientIn.readByte();
+            messageByte[1] = clientIn.readByte();
+            ByteBuffer byteBuffer = ByteBuffer.wrap(messageByte, 0, 2);
+
+            int bytesToRead = byteBuffer.getShort();
+
+            while(!end) {
+
+                bytesRead = clientIn.read(messageByte);
+                messageString += new String(messageByte, 0, bytesRead);
+                if(messageString.length() == bytesToRead) {
+
+                    end = true;
+
+                }
+            }
 
             try {
 
@@ -64,15 +122,27 @@ public class JDBCResponder {
             } catch(SQLException e) {
 
                 System.out.println("JDBCResponder: SQL error!");
-                e.printStackTrace();
+                System.out.println(e.toString());
 
             }
 
         } catch(Exception e) {
 
             System.out.println("JDBCResponder: Error!");
-            e.printStackTrace();
+            System.out.println(e.toString());
 
+        } finally {
+
+            try {
+
+                if(server != null) server.close();
+                if(client != null) client.close();
+
+            } catch(Exception e) {
+
+                e.printStackTrace();
+
+            }
         }
     }
 }

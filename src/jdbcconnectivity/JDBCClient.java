@@ -21,7 +21,7 @@ public class JDBCClient {
     private static final Scanner sc = new Scanner(System.in);
     private static final String[] hosts = {"st-cn0001.oulu.fi", "st-cn0002.oulu.fi", "st-cn0003.oulu.fi"};
     private static final String dbConnStr = "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))";
-    private static final String lfile = "test.txt";
+    private static final String lfile = "responder.jar";
     private static final String info = "You need to use your ITEE login, not Paju login.\n" +
             "Your ITEE credentials are the ones used in ITEE computer classes.";
 
@@ -33,6 +33,7 @@ public class JDBCClient {
         String dbUname = null;
         String dbPassw = null;
         FileInputStream fis = null;
+        int port = 0;
 
         try {
 
@@ -83,7 +84,7 @@ public class JDBCClient {
             // SCP
             // -----------------------------------------------------------------------------------------------------
 
-            String rfile = "/home/" + sshUname + "/jdbcresponder/test.txt";
+            String rfile = "/home/" + sshUname + "/jdbcresponder/" + lfile;
             boolean ptimestamp = true;
             String scpCommand = "scp " + (ptimestamp ? "-p" : "") + " -t " + rfile;
             Channel scpChannel = session.openChannel("exec");
@@ -164,7 +165,7 @@ public class JDBCClient {
 
             scpOut.close();
             scpChannel.disconnect();
-            PrintUtils.printlnColor("Payload delivered.", PrintUtils.Color.YELLOW, System.out);
+            PrintUtils.printlnColor("SCP complete, responder delivered.", PrintUtils.Color.YELLOW, System.out);
 
             // *****************************************************************************************************
 
@@ -176,14 +177,13 @@ public class JDBCClient {
             JPasswordField pass = new JPasswordField(25);
             pwPanel.add(pwLabel);
             pwPanel.add(pass);
-            String[] options = new String[] {"OK", "Cancel"};
+            String[] options = new String[]{"OK", "Cancel"};
             int option = JOptionPane.showOptionDialog(null, pwPanel, "Database Password",
-                    JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
-                    null, options, options[1]);
+                    JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             if(option == 0) // pressing OK button
             {
 
-                dbPassw = pass.getPassword().toString();
+                dbPassw = new String(pass.getPassword());
 
             } else {
 
@@ -191,63 +191,70 @@ public class JDBCClient {
 
             }
 
-            // LOOP TO PROMPT USER INPUT STARTS HERE
-            // -----------------------------------------------------------------------------------------------------
-            String command = null;
+            String command = "java -jar " + rfile + " \"" + dbConnStr + "\" " + dbUname + " " + dbPassw;
+            Channel channel = session.openChannel("exec");
+            ((ChannelExec) channel).setCommand(command);
+            InputStream in = channel.getInputStream();
+            channel.connect();
+            PrintUtils.printlnColor("Executing responder on remote host.", PrintUtils.Color.YELLOW, System.out);
+
+            String response = null;
+            byte[] tmp = new byte[bufferSize];
             while(true) {
 
-                PrintUtils.printlnColor("Enter command.", PrintUtils.Color.BLUE, System.out);
-                command = sc.nextLine();
-                if(command.toLowerCase().equals("quit")) break;
+                while(in.available() > 0) {
 
-                Channel channel = session.openChannel("exec");
-                System.out.println("Executing query " + "\"" + command + "\"" + " ...");
-                ((ChannelExec) channel).setCommand(command);
-                InputStream in = channel.getInputStream();
-                channel.connect();
+                    int i = in.read(tmp, 0, bufferSize);
+                    if(i < 0) break;
+                    response = new String(tmp, 0, i);
+                    PrintUtils.printlnColor(response, PrintUtils.Color.GREEN, System.out);
 
-                byte[] tmp = new byte[bufferSize];
-                while(true) {
+                    if(response.contains("PORT ")) {
 
-                    while(in.available() > 0) {
-
-                        int i = in.read(tmp, 0, bufferSize);
-                        if(i < 0) break;
-                        PrintUtils.printlnColor(new String(tmp, 0, i), PrintUtils.Color.GREEN, System.out);
+                        int start = response.indexOf("PORT ");
+                        start += "PORT ".length();
+                        port = Integer.parseInt(response.substring(start));
 
                     }
 
-                    if(channel.isClosed()) {
+                    if(response.contains("DBCONNOK")) {
 
-                        if(in.available() > 0) continue;
-
-                        int status = channel.getExitStatus();
-                        if(status != 0) {
-
-                            PrintUtils.printlnColor("Channel error! Query might not have been completed succesfully.",
-                                    PrintUtils.Color.RED, System.out);
-
-                        }
-
+                        PrintUtils.printlnColor("Responder has database connection. Proceeding...",
+                                PrintUtils.Color.YELLOW, System.out);
+                        channel.disconnect();
                         break;
-
-                    }
-
-                    try {
-
-                        Thread.sleep(100);
-
-                    } catch(Exception ee) {
-
-                        System.out.println("ee");
 
                     }
                 }
 
-                channel.disconnect();
+                if(channel.isClosed()) {
+
+                    if(in.available() > 0) continue;
+
+                    int status = channel.getExitStatus();
+                    if(status != 0) {
+
+                        PrintUtils.printlnColor("Channel exit-status non-zero, possible error (" + status + ").",
+                                PrintUtils.Color.RED, System.out);
+
+                    }
+
+                    break;
+
+                }
+
+                try {
+
+                    Thread.sleep(100);
+
+                } catch(Exception ee) {}
             }
 
+            channel.disconnect();
             session.disconnect();
+
+            // SOCKETRY
+            
 
         } catch(Exception e) {
 
