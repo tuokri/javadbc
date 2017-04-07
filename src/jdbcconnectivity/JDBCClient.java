@@ -20,6 +20,7 @@ public class JDBCClient {
     private static final int scpBufferSize = 1024;
     private static final Scanner sc = new Scanner(System.in);
     private static final String[] hosts = {"st-cn0001.oulu.fi", "st-cn0002.oulu.fi", "st-cn0003.oulu.fi"};
+    private static final String dbConnStr = "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))";
     private static final String lfile = "test.txt";
     private static final String info = "You need to use your ITEE login, not Paju login.\n" +
             "Your ITEE credentials are the ones used in ITEE computer classes.";
@@ -29,7 +30,7 @@ public class JDBCClient {
         JSch jsch = new JSch();
         String sshUname = null;
         String sshHost = null;
-        String dbConnStr = null;
+        String dbUname = null;
         String dbPassw = null;
         FileInputStream fis = null;
 
@@ -102,7 +103,7 @@ public class JDBCClient {
 
             if(ptimestamp) {
 
-                scpCommand = "T " + (_lfile.lastModified() / 1000) + " 0";
+                scpCommand = "T" + (_lfile.lastModified() / 1000) + " 0";
                 scpCommand += (" " + (_lfile.lastModified() / 1000) + " 0\n");
                 scpOut.write(scpCommand.getBytes());
                 scpOut.flush();
@@ -167,13 +168,28 @@ public class JDBCClient {
 
             // *****************************************************************************************************
 
-            //  STU31@"(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))"
             JFrame dbConnStrFrame = new JFrame("Database Connection String");
-            dbConnStr = "jdbc:oracle:thin:@";
-            dbConnStr += JOptionPane.showInputDialog(dbConnStrFrame, "Enter your database connection string.");
-            if(dbConnStr == null) System.exit(0);
-            UserInfo dbUserInfo = new DbUserInfo();
-            dbPassw = dbUserInfo.getPassword();
+            dbUname = JOptionPane.showInputDialog(dbConnStrFrame, "Enter your database username (STUXX).");
+            if(dbUname == null) System.exit(0);
+            JPanel pwPanel = new JPanel();
+            JLabel pwLabel = new JLabel("Enter your database password: ");
+            JPasswordField pass = new JPasswordField(25);
+            pwPanel.add(pwLabel);
+            pwPanel.add(pass);
+            String[] options = new String[] {"OK", "Cancel"};
+            int option = JOptionPane.showOptionDialog(null, pwPanel, "Database Password",
+                    JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
+                    null, options, options[1]);
+            if(option == 0) // pressing OK button
+            {
+
+                dbPassw = pass.getPassword().toString();
+
+            } else {
+
+                System.exit(0);
+
+            }
 
             // LOOP TO PROMPT USER INPUT STARTS HERE
             // -----------------------------------------------------------------------------------------------------

@@ -37,11 +37,13 @@ public class SshUserInfo implements UserInfo, UIKeyboardInteractive {
     public String getPassphrase() {
 
         return null;
+
     }
 
     public boolean promptPassphrase(String message) {
 
         return true;
+
     }
 
     public boolean promptPassword(String message) {

@@ -45,7 +45,7 @@ public class JDBCResponder {
         ResultSet rs = null;
         try {
 
-            // "(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))"
+            // "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))"
             Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
 
             try {
