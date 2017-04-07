@@ -25,7 +25,7 @@ public class JDBCResponder {
 
         }
 
-        System.out.println("JDBCResponder: Oracle JDBC Driver registered.");
+        //  System.out.println("JDBCResponder: Oracle JDBC Driver registered.");
 
         try {
 
@@ -46,14 +46,14 @@ public class JDBCResponder {
         try {
 
             Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
-            System.out.println("JDBCResponder: Connected to database.");
+            // System.out.println("JDBCResponder: Connected to database.");
 
             try {
 
                 Statement stmt = connection.createStatement();
 
                 rs = stmt.executeQuery(query);
-                System.out.println("JDBCResponder: Executing query...");
+                // System.out.println("JDBCResponder: Executing query...");
                 while(rs.next()) {
 
                     rsString += rs.getString(1);

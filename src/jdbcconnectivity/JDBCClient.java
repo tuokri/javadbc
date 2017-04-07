@@ -12,8 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Scanner;
 
-// TODO: send responder.jar to remote server, open inSocket and outSocket, wait for reply from responder, then start SQL query loop
-
 public class JDBCClient {
 
     private static final int bufferSize = 1024;
@@ -22,8 +20,9 @@ public class JDBCClient {
     private static final String[] hosts = {"st-cn0001.oulu.fi", "st-cn0002.oulu.fi", "st-cn0003.oulu.fi"};
     private static final String dbConnStr = "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))";
     private static final String lfile = "responder.jar";
-    private static final String info = "You need to use your ITEE login, not Paju login.\n" +
-            "Your ITEE credentials are the ones used in ITEE computer classes.";
+    private static final String info = "PLEASE READ!\n" + "You need to use your ITEE login.\n" +
+            "Your ITEE login is the one you use in ITEE computer classes.\n" + "You will also need a toldb username and password!\n" +
+            "Database usernames and passwords are provided by course staff!";
 
     public static void main(String[] args) {
 
@@ -33,7 +32,6 @@ public class JDBCClient {
         String dbUname = null;
         String dbPassw = null;
         FileInputStream fis = null;
-        int port = 0;
 
         try {
 
@@ -70,7 +68,6 @@ public class JDBCClient {
             // MKDIR
             // -----------------------------------------------------------------------------------------------------
 
-            // SCP FROM LOCAL TO REMOTE
             // IF DIRECTORY DOES NOT EXISTS, CREATE IT
             String mkdirCommand = "mkdir " + "/home/" + sshUname + "/jdbcresponder";
             Channel mkdirChannel = session.openChannel("exec");
@@ -169,7 +166,7 @@ public class JDBCClient {
 
             // *****************************************************************************************************
 
-            JFrame dbConnStrFrame = new JFrame("Database Connection String");
+            JFrame dbConnStrFrame = new JFrame("Database Connection");
             dbUname = JOptionPane.showInputDialog(dbConnStrFrame, "Enter your database username (STUXX).");
             if(dbUname == null) System.exit(0);
             JPanel pwPanel = new JPanel();
@@ -191,70 +188,52 @@ public class JDBCClient {
 
             }
 
-            String command = "java -jar " + rfile + " \"" + dbConnStr + "\" " + dbUname + " " + dbPassw;
-            Channel channel = session.openChannel("exec");
-            ((ChannelExec) channel).setCommand(command);
-            InputStream in = channel.getInputStream();
-            channel.connect();
-            PrintUtils.printlnColor("Executing responder on remote host.", PrintUtils.Color.YELLOW, System.out);
+            // BEGIN INPUT LOOP FOR QUERYING DATABASE!
 
-            String response = null;
-            byte[] tmp = new byte[bufferSize];
             while(true) {
 
-                while(in.available() > 0) {
+                String query = sc.nextLine();
+                String command = "java -jar " + rfile + " \"" + dbConnStr + "\" " + dbUname + " " + dbPassw + " " + query;
+                Channel channel = session.openChannel("exec");
+                ((ChannelExec) channel).setCommand(command);
+                InputStream in = channel.getInputStream();
+                channel.connect();
 
-                    int i = in.read(tmp, 0, bufferSize);
-                    if(i < 0) break;
-                    response = new String(tmp, 0, i);
-                    PrintUtils.printlnColor(response, PrintUtils.Color.GREEN, System.out);
+                String response = null;
+                byte[] tmp = new byte[bufferSize];
+                while(true) {
 
-                    if(response.contains("PORT ")) {
+                    while(in.available() > 0) {
 
-                        int start = response.indexOf("PORT ");
-                        start += "PORT ".length();
-                        port = Integer.parseInt(response.substring(start));
-
+                        int i = in.read(tmp, 0, bufferSize);
+                        if(i < 0) break;
+                        response = new String(tmp, 0, i);
+                        PrintUtils.printlnColor(response, PrintUtils.Color.GREEN, System.out);
                     }
 
-                    if(response.contains("DBCONNOK")) {
+                    if(channel.isClosed()) {
 
-                        PrintUtils.printlnColor("Responder has database connection. Proceeding...",
-                                PrintUtils.Color.YELLOW, System.out);
-                        channel.disconnect();
+                        if(in.available() > 0) continue;
+
+                        int status = channel.getExitStatus();
+                        if(status != 0) {
+
+                            PrintUtils.printlnColor("Channel exit-status non-zero, possible error (" + status + ").",
+                                    PrintUtils.Color.RED, System.out);
+
+                        }
+
                         break;
 
                     }
+
+                    try {
+
+                        Thread.sleep(500);
+
+                    } catch(Exception ee) {}
                 }
-
-                if(channel.isClosed()) {
-
-                    if(in.available() > 0) continue;
-
-                    int status = channel.getExitStatus();
-                    if(status != 0) {
-
-                        PrintUtils.printlnColor("Channel exit-status non-zero, possible error (" + status + ").",
-                                PrintUtils.Color.RED, System.out);
-
-                    }
-
-                    break;
-
-                }
-
-                try {
-
-                    Thread.sleep(100);
-
-                } catch(Exception ee) {}
             }
-
-            channel.disconnect();
-            session.disconnect();
-
-            // SOCKETRY
-            
 
         } catch(Exception e) {
 
