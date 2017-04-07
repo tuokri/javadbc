@@ -32,7 +32,8 @@ public class JDBCResponder {
         try {
 
             dbConnStr = args[0];
-            dbPassw = args[1].toString();
+            dbUname = args[1];
+            dbPassw = args[2];
 
         } catch(Exception e) {
 
@@ -41,18 +42,24 @@ public class JDBCResponder {
 
         }
 
-        System.out.println("JDBCResponder: Executing query.");
         ResultSet rs = null;
         try {
 
+            // "(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))"
             Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
 
             try {
 
+                query = "SELECT * FROM YEAR";
                 Statement stmt = connection.createStatement();
-                // Query is provided as command line argument.
                 System.out.println("QUERY : " + query);
                 rs = stmt.executeQuery(query);
+
+                while(rs.next()) {
+
+                    System.out.println(rs.getString("YEAR"));
+
+                }
 
             } catch(SQLException e) {
 
@@ -64,22 +71,6 @@ public class JDBCResponder {
         } catch(Exception e) {
 
             System.out.println("JDBCResponder: Error!");
-            e.printStackTrace();
-
-        }
-
-        try {
-
-            while(rs.next()) {
-
-                String yearName = rs.getString("YEAR");
-                System.out.println(yearName);
-
-            }
-
-        } catch(SQLException e) {
-
-            System.out.println("SQLException!");
             e.printStackTrace();
 
         }
