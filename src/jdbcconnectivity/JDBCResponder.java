@@ -1,18 +1,19 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
+
+// TODO: when ran via CLI, connect to database, open inSocket and outSocket, wait for start-message, send greetings to home, wait for response ... do stuff
 
 public class JDBCResponder {
 
     public static void main(String[] args) {
 
         String query = null;
+        String dbConnStr = null;
+        String dbUname = null;
+        String dbPassw = null;
 
         try {
 
@@ -20,41 +21,33 @@ public class JDBCResponder {
 
         } catch(ClassNotFoundException e) {
 
-            System.out.println("Oracle JDBC Driver not found!");
+            System.out.println("JDBCResponder: Oracle JDBC Driver not found!");
             e.printStackTrace();
             System.exit(0);
 
         }
 
-        System.out.println("Oracle JDBC Driver registered!");
+        System.out.println("JDBCResponder: Oracle JDBC Driver registered!");
 
-        Properties config = new Properties();
-        String dbConnStr = null;
-        String dbUname = null;
-        String dbPassw = null;
+        try {
 
-        try(BufferedReader configFile = new BufferedReader(new FileReader("config.properties"))) {
+            dbConnStr = args[0];
+            dbPassw = args[1].toString();
 
-            config.load(configFile);
-            dbConnStr = config.getProperty("dbConnStr");
-            dbUname = config.getProperty("dbUname");
-            dbPassw = config.getProperty("dbPassw");
+        } catch(Exception e) {
 
-        } catch(IOException ioe) {
-
-            System.out.println("IOException!");
-            ioe.printStackTrace();
+            e.printStackTrace();
             System.exit(0);
 
         }
 
-        System.out.println("Executing query.");
+        System.out.println("JDBCResponder: Executing query.");
         ResultSet rs = null;
-        try{
+        try {
 
             Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
 
-            try{
+            try {
 
                 Statement stmt = connection.createStatement();
                 // Query is provided as command line argument.
@@ -63,14 +56,14 @@ public class JDBCResponder {
 
             } catch(SQLException e) {
 
-                System.out.println("SQL error!");
+                System.out.println("JDBCResponder: SQL error!");
                 e.printStackTrace();
 
             }
 
         } catch(Exception e) {
 
-            System.out.println("Error!");
+            System.out.println("JDBCResponder: Error!");
             e.printStackTrace();
 
         }

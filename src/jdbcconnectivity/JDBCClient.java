@@ -12,10 +12,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Scanner;
 
+// TODO: send responder.jar to remote server, open inSocket and outSocket, wait for reply from responder, then start SQL query loop
+
 public class JDBCClient {
 
-    private static final int bufferSize = 2048;
-    private static final int scpBufferSize = 2048;
+    private static final int bufferSize = 1024;
+    private static final int scpBufferSize = 1024;
     private static final Scanner sc = new Scanner(System.in);
     private static final String[] hosts = {"st-cn0001.oulu.fi", "st-cn0002.oulu.fi", "st-cn0003.oulu.fi"};
     private static final String lfile = "test.txt";
@@ -25,11 +27,16 @@ public class JDBCClient {
     public static void main(String[] args) {
 
         JSch jsch = new JSch();
-        String sshUname;
-        String sshHost;
+        String sshUname = null;
+        String sshHost = null;
+        String dbConnStr = null;
+        String dbPassw = null;
         FileInputStream fis = null;
 
         try {
+
+            // USER INTERFACE
+            // -----------------------------------------------------------------------------------------------------
 
             JFrame welcomeFrame = new JFrame("Info Frame");
             JOptionPane.showMessageDialog(welcomeFrame, info, "Info", JOptionPane.INFORMATION_MESSAGE);
@@ -45,13 +52,21 @@ public class JDBCClient {
                     JOptionPane.QUESTION_MESSAGE, null, hosts, hosts[0]);
             if(sshHost == null) System.exit(0);
 
-            String rfile = "/home/" + sshUname + "/jdbcresponder/test.txt";
+            // *****************************************************************************************************
+
+            // SSH SESSION
+            // -----------------------------------------------------------------------------------------------------
 
             Session session = jsch.getSession(sshUname, sshHost, 22);
             UserInfo userInfo = new SshUserInfo();
             session.setUserInfo(userInfo);
             session.connect();
-            PrintUtils.printlnColor("SSH session connected.", PrintUtils.Color.BLUE, System.out);
+            PrintUtils.printlnColor("ssh " + sshUname + "@" + sshHost, PrintUtils.Color.YELLOW, System.out);
+
+            // *****************************************************************************************************
+
+            // MKDIR
+            // -----------------------------------------------------------------------------------------------------
 
             // SCP FROM LOCAL TO REMOTE
             // IF DIRECTORY DOES NOT EXISTS, CREATE IT
@@ -60,7 +75,14 @@ public class JDBCClient {
             ((ChannelExec) mkdirChannel).setCommand(mkdirCommand);
             mkdirChannel.connect();
             mkdirChannel.disconnect();
+            PrintUtils.printlnColor(mkdirCommand, PrintUtils.Color.YELLOW, System.out);
 
+            // *****************************************************************************************************
+
+            // SCP
+            // -----------------------------------------------------------------------------------------------------
+
+            String rfile = "/home/" + sshUname + "/jdbcresponder/test.txt";
             boolean ptimestamp = true;
             String scpCommand = "scp " + (ptimestamp ? "-p" : "") + " -t " + rfile;
             Channel scpChannel = session.openChannel("exec");
@@ -141,10 +163,26 @@ public class JDBCClient {
 
             scpOut.close();
             scpChannel.disconnect();
+            PrintUtils.printlnColor("Payload delivered.", PrintUtils.Color.YELLOW, System.out);
+
+            // *****************************************************************************************************
+
+            //  STU31@"(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))"
+            JFrame dbConnStrFrame = new JFrame("Database Connection String");
+            dbConnStr = "jdbc:oracle:thin:@";
+            dbConnStr += JOptionPane.showInputDialog(dbConnStrFrame, "Enter your database connection string.");
+            if(dbConnStr == null) System.exit(0);
+            UserInfo dbUserInfo = new DbUserInfo();
+            dbPassw = dbUserInfo.getPassword();
 
             // LOOP TO PROMPT USER INPUT STARTS HERE
+            // -----------------------------------------------------------------------------------------------------
             String command = null;
             while(true) {
+
+                PrintUtils.printlnColor("Enter command.", PrintUtils.Color.BLUE, System.out);
+                command = sc.nextLine();
+                if(command.toLowerCase().equals("quit")) break;
 
                 Channel channel = session.openChannel("exec");
                 System.out.println("Executing query " + "\"" + command + "\"" + " ...");
@@ -170,7 +208,7 @@ public class JDBCClient {
                         int status = channel.getExitStatus();
                         if(status != 0) {
 
-                            PrintUtils.printlnColor("Channel error! Query might not have been completed succesfully",
+                            PrintUtils.printlnColor("Channel error! Query might not have been completed succesfully.",
                                     PrintUtils.Color.RED, System.out);
 
                         }
@@ -193,7 +231,7 @@ public class JDBCClient {
                 channel.disconnect();
             }
 
-            //session.disconnect();
+            session.disconnect();
 
         } catch(Exception e) {
 
