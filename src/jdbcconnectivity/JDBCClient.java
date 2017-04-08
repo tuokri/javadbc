@@ -21,42 +21,51 @@ public class JDBCClient {
     private static final String dbConnStr = "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))";
     private static final String lfile = "responder.jar";
     private static final String info = "PLEASE READ!\n" + "You need to use your ITEE login.\n" +
-            "Your ITEE login is the one you use in ITEE computer classes.\n" + "You will also need a toldb username and password!\n" +
-            "Database usernames and passwords are provided by course staff!";
+            "Your ITEE login is the one you use in ITEE computer classes.\n" + "You will also need a toldb username and password.\n" +
+            "Database usernames and passwords are provided by course staff.";
 
     public static void main(String[] args) {
 
         JSch jsch = new JSch();
+        UserInfo userInfo = null;
         String sshUname = null;
         String sshHost = null;
         String dbUname = null;
         String dbPassw = null;
         FileInputStream fis = null;
+        Session session = null;
+        Channel mkdirChannel = null;
+        Channel scpChannel = null;
+        Channel queryChannel = null;
+        OutputStream scpOut = null;
+        InputStream scpIn = null;
+        InputStream queryChannelIn = null;
+
+        JFrame welcomeFrame = new JFrame("Info Frame");
+        JOptionPane.showMessageDialog(welcomeFrame, info, "Info", JOptionPane.INFORMATION_MESSAGE);
+
+        JFrame sshUnameFrame = new JFrame("Enter ITEE Username Prompt");
+        sshUname = JOptionPane.showInputDialog(sshUnameFrame, "Enter ITEE username.",
+                System.getProperty("user.name"));
+        if(sshUname == null) System.exit(0);
+
+        JFrame sshHostFrame = new JFrame("Select ITEE Host Prompt");
+        sshHost = (String) JOptionPane.showInputDialog(sshHostFrame,
+                "Select ITEE host. If you are uncertain, choose the first option.", "ITEE Host",
+                JOptionPane.QUESTION_MESSAGE, null, hosts, hosts[0]);
+        if(sshHost == null) System.exit(0);
+
+        userInfo = new SshUserInfo();
 
         try {
 
-            JFrame welcomeFrame = new JFrame("Info Frame");
-            JOptionPane.showMessageDialog(welcomeFrame, info, "Info", JOptionPane.INFORMATION_MESSAGE);
-
-            JFrame sshUnameFrame = new JFrame("Enter ITEE Username Prompt");
-            sshUname = JOptionPane.showInputDialog(sshUnameFrame, "Enter ITEE username.",
-                    System.getProperty("user.name"));
-            if(sshUname == null) System.exit(0);
-
-            JFrame sshHostFrame = new JFrame("Select ITEE Host Prompt");
-            sshHost = (String) JOptionPane.showInputDialog(sshHostFrame,
-                    "Select ITEE host. If you are uncertain, choose the first option.", "ITEE Host",
-                    JOptionPane.QUESTION_MESSAGE, null, hosts, hosts[0]);
-            if(sshHost == null) System.exit(0);
-
-            Session session = jsch.getSession(sshUname, sshHost, 22);
-            UserInfo userInfo = new SshUserInfo();
+            session = jsch.getSession(sshUname, sshHost, 22);
             session.setUserInfo(userInfo);
             session.connect();
             PrintUtils.printlnColor("ssh " + sshUname + "@" + sshHost, PrintUtils.Color.YELLOW, System.out);
 
             String mkdirCommand = "mkdir " + "/home/" + sshUname + "/jdbcresponder";
-            Channel mkdirChannel = session.openChannel("exec");
+            mkdirChannel = session.openChannel("exec");
             ((ChannelExec) mkdirChannel).setCommand(mkdirCommand);
             mkdirChannel.connect();
             mkdirChannel.disconnect();
@@ -65,16 +74,15 @@ public class JDBCClient {
             String rfile = "/home/" + sshUname + "/jdbcresponder/" + lfile;
             boolean ptimestamp = true;
             String scpCommand = "scp " + (ptimestamp ? "-p" : "") + " -t " + rfile;
-            Channel scpChannel = session.openChannel("exec");
+            scpChannel = session.openChannel("exec");
             ((ChannelExec) scpChannel).setCommand(scpCommand);
-            OutputStream scpOut = scpChannel.getOutputStream();
-            InputStream scpIn = scpChannel.getInputStream();
+            scpOut = scpChannel.getOutputStream();
+            scpIn = scpChannel.getInputStream();
             scpChannel.connect();
 
             if(checkAck(scpIn) != 0) {
 
                 System.out.print("I/O error! (ack)");
-                System.exit(0);
 
             }
 
@@ -90,7 +98,6 @@ public class JDBCClient {
                 if(checkAck(scpIn) != 0) {
 
                     System.out.print("I/O error! (ack)");
-                    System.exit(0);
 
                 }
             }
@@ -114,7 +121,6 @@ public class JDBCClient {
             if(checkAck(scpIn) != 0) {
 
                 System.out.print("I/O error! (ack)");
-                System.exit(0);
 
             }
 
@@ -124,11 +130,10 @@ public class JDBCClient {
 
                 int len = fis.read(scpBuf, 0, scpBuf.length);
                 if(len <= 0) break;
-                scpOut.write(scpBuf, 0, len); //out.flush();
+                scpOut.write(scpBuf, 0, len);
 
             }
             fis.close();
-            fis = null;
             // send '\0'
             scpBuf[0] = 0;
             scpOut.write(scpBuf, 0, 1);
@@ -137,7 +142,6 @@ public class JDBCClient {
             if(checkAck(scpIn) != 0) {
 
                 System.out.print("I/O error! (ack)");
-                System.exit(0);
 
             }
 
@@ -154,7 +158,7 @@ public class JDBCClient {
             pwPanel.add(pwLabel);
             pwPanel.add(pass);
             String[] options = new String[]{"OK", "Cancel"};
-            int option = JOptionPane.showOptionDialog(null, pwPanel, "Database Password",
+            int option = JOptionPane.showOptionDialog(dbConnStrFrame, pwPanel, "Database Password",
                     JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             if(option == 0) // pressing OK button
             {
@@ -169,31 +173,34 @@ public class JDBCClient {
 
             while(true) {
 
-                PrintUtils.printlnColor("Input database query and press ENTER.", PrintUtils.Color.BLUE, System.out);
+                PrintUtils.printlnColor("Input database query and press ENTER. Input 'quit' to exit program.",
+                        PrintUtils.Color.BLUE, System.out);
                 String query = sc.nextLine();
+                if(query.toLowerCase().trim().equals("quit")) break;
+
                 String command = "java -jar " + rfile + " \"" + dbConnStr + "\" " + dbUname + " " + dbPassw + " \"" + query + "\"";
-                Channel channel = session.openChannel("exec");
-                ((ChannelExec) channel).setCommand(command);
-                InputStream in = channel.getInputStream();
-                channel.connect();
+                queryChannel = session.openChannel("exec");
+                ((ChannelExec) queryChannel).setCommand(command);
+                queryChannelIn = queryChannel.getInputStream();
+                queryChannel.connect();
 
                 String response = null;
                 byte[] tmp = new byte[bufferSize];
                 while(true) {
 
-                    while(in.available() > 0) {
+                    while(queryChannelIn.available() > 0) {
 
-                        int i = in.read(tmp, 0, bufferSize);
+                        int i = queryChannelIn.read(tmp, 0, bufferSize);
                         if(i < 0) break;
                         response = new String(tmp, 0, i);
                         PrintUtils.printlnColor(response, PrintUtils.Color.GREEN, System.out);
                     }
 
-                    if(channel.isClosed()) {
+                    if(queryChannel.isClosed()) {
 
-                        if(in.available() > 0) continue;
+                        if(queryChannelIn.available() > 0) continue;
 
-                        int status = channel.getExitStatus();
+                        int status = queryChannel.getExitStatus();
                         if(status != 0) {
 
                             PrintUtils.printlnColor("Channel exit-status non-zero, possible error (" + status + ").",
@@ -218,6 +225,18 @@ public class JDBCClient {
             System.out.println("An exception occurred! Check console.");
             e.printStackTrace();
 
+        } finally {
+
+            if(mkdirChannel != null) mkdirChannel.disconnect();
+            if(scpChannel != null) scpChannel.disconnect();
+            if(queryChannel != null) queryChannel.disconnect();
+            if(session != null) session.disconnect();
+
+            try { fis.close(); } catch (Exception e) { /* Ignore. */ }
+            try { scpOut.close(); } catch (Exception e) { /* Ignore. */ }
+            try { scpIn.close(); } catch (Exception e) { /* Ignore. */ }
+            try { queryChannelIn.close(); } catch (Exception e) { /* Ignore. */ }
+
         }
 
         System.exit(0);
@@ -231,7 +250,7 @@ public class JDBCClient {
 
         if(b == 1 || b == 2) {
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int c;
 
             do {
