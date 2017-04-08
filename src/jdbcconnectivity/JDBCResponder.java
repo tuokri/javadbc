@@ -73,7 +73,7 @@ public class JDBCResponder {
                         String colName = rsmd.getColumnName(i);
                         System.out.print("\t" + colName + ":\t");
 
-                        int type = rs.getType(i);
+                        int type = rsmd.getColumnType(i);
                         if(type == Types.VARCHAR || type == Types.CHAR) {
 
                             System.out.println(rs.getString(i));
