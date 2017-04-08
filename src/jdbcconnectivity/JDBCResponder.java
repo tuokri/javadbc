@@ -1,6 +1,9 @@
+import org.apache.commons.dbutils.DbUtils;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -41,22 +44,27 @@ public class JDBCResponder {
 
         }
 
-        ResultSet rs = null;
         String rsString = null;
+        ResultSet rs = null;
+        Statement stmt = null;
+        Connection conn = null;
+
         try {
 
-            Connection connection = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
+            conn = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
             // System.out.println("JDBCResponder: Connected to database.");
 
             try {
 
-                Statement stmt = connection.createStatement();
+                stmt = conn.createStatement();
 
                 rs = stmt.executeQuery(query);
-                // System.out.println("JDBCResponder: Executing query...");
+                ResultSetMetaData rsmd = rs.getMetaData();
+                int numberOfColumns = rsmd.getColumnCount();
+
                 while(rs.next()) {
 
-                    rsString += rs.getString(1);
+
 
                 }
 
@@ -73,6 +81,12 @@ public class JDBCResponder {
 
             System.out.println("JDBCResponder: Error.");
             System.out.println(e);
+
+        } finally {
+
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(conn);
 
         }
     }
