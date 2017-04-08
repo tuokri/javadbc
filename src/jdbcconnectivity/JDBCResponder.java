@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 public class JDBCResponder {
 
@@ -57,15 +58,42 @@ public class JDBCResponder {
             try {
 
                 stmt = conn.createStatement();
-
                 rs = stmt.executeQuery(query);
                 ResultSetMetaData rsmd = rs.getMetaData();
                 int numberOfColumns = rsmd.getColumnCount();
+                int rowCount = 1;
 
                 while(rs.next()) {
 
+                    System.out.println("Row " + rowCount++ + ":  ");
+
+                    for (int i = 1; i <= numberOfColumns; i++) {
 
 
+                        String colName = rsmd.getColumnName(i);
+                        System.out.print("\t" + colName + ":\t");
+
+                        int type = rs.getType();
+                        if(type == Types.VARCHAR || type == Types.CHAR) {
+
+                            System.out.println(rs.getNString(i));
+
+                        } else if(type == Types.DATE) {
+
+                            System.out.println(rs.getDate(i));
+
+                        } else if(type == Types.REAL) {
+
+                            System.out.println(rs.getDouble(i));
+
+                        } else {
+
+                            System.out.println(rs.getInt(i));
+
+                        }
+                    }
+
+                    System.out.println("");
                 }
 
                 System.out.println(rsString);
