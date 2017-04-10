@@ -67,6 +67,7 @@ public class SshUserInfo implements UserInfo, UIKeyboardInteractive {
     public void showMessage(String message) {
 
         JOptionPane.showMessageDialog(null, message);
+
     }
 
     public String[] promptKeyboardInteractive(String destination,
