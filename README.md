@@ -29,10 +29,10 @@ This application is barebone and likely contains bugs.
 Acquire dependencies and build.
 
 
-Windows: ```javac -cp .;ORACLE_DRIVER.jar;JSCH.jar;DBUTILS.jar *.java```
+Windows: ```javac -cp .;ORACLE_DRIVER.jar;JSCH.jar;DBUTILS.jar; *.java```
 
 
-Linux/Unix: ```javac -cp .:ORACLE_DRIVER.jar:JSCH.jar:DBUTILS.jar *.java```
+Linux/Unix: ```javac -cp .:ORACLE_DRIVER.jar:JSCH.jar:DBUTILS.jar: *.java```
 
 
 #### Dependencies:
