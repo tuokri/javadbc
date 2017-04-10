@@ -23,19 +23,27 @@ public class PrintUtils {
         WHITEBG ("\u001B[47m");
 
         private final String _code;
+        private final String os;
 
         Color(String code) {
 
             _code = code;
+            os = System.getProperty("os.name");
 
         }
 
         public String getCode() {
 
-            return _code;
+            if(os.toLowerCase().startsWith("windows")) {
 
+                return "";
+
+            } else {
+
+                return _code;
+
+            }
         }
-
     }
 
     private PrintUtils() {
