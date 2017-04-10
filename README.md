@@ -1,6 +1,9 @@
 # Remote access to Oulu TOLDB database.
 
 
+This application is barebone and likely contains bugs.
+
+
 ## HOW TO:
 ### Option 1 (easy) : Download ready to use JAR package.
 
