@@ -21,8 +21,8 @@ public class JDBCClient {
     private static final String dbConnStr = "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))";
     private static final String lfile = "responder.jar";
     private static final String info = "PLEASE READ!\n" + "You need to use your ITEE login.\n" +
-            "Your ITEE login is the one you use in ITEE computer classes.\n" + "You will also need a toldb username and password.\n" +
-            "Database usernames and passwords are provided by course staff.";
+            "Your ITEE login is the one you use in ITEE computer classes.\n" + "You will also need a TOLDB username and password.\n" +
+            "TOLDB database usernames and passwords are provided by course staff.";
 
     public static void main(String[] args) {
 
@@ -55,11 +55,10 @@ public class JDBCClient {
                 JOptionPane.QUESTION_MESSAGE, null, hosts, hosts[0]);
         if(sshHost == null) System.exit(0);
 
-        userInfo = new SshUserInfo();
-
         try {
 
             session = jsch.getSession(sshUname, sshHost, 22);
+            userInfo = new SshUserInfo();
             session.setUserInfo(userInfo);
             session.connect();
             PrintUtils.printlnColor("ssh " + sshUname + "@" + sshHost, PrintUtils.Color.YELLOW, System.out);
@@ -167,7 +166,7 @@ public class JDBCClient {
 
             } else {
 
-                System.exit(0);
+                dbPassw = "";
 
             }
 
@@ -194,6 +193,24 @@ public class JDBCClient {
                         if(i < 0) break;
                         response = new String(tmp, 0, i);
                         PrintUtils.printlnColor(response, PrintUtils.Color.GREEN, System.out);
+                        if(response.contains("virheellinen käyttäjätunnus")) {
+
+                            dbUname = JOptionPane.showInputDialog(dbConnStrFrame, "There was an error. Please re-enter your database credentials.\n" +
+                                    "Your database username (STUXX).");
+
+                            option = JOptionPane.showOptionDialog(dbConnStrFrame, pwPanel, "Database Password",
+                                    JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                            if(option == 0) // pressing OK button
+                            {
+
+                                dbPassw = new String(pass.getPassword());
+
+                            } else {
+
+                                dbPassw = "";
+
+                            }
+                        }
                     }
 
                     if(queryChannel.isClosed()) {
@@ -216,7 +233,8 @@ public class JDBCClient {
 
                         Thread.sleep(500);
 
-                    } catch(Exception ee) {}
+                    } catch(Exception ee) {
+                    }
                 }
             }
 
@@ -232,10 +250,18 @@ public class JDBCClient {
             if(queryChannel != null) queryChannel.disconnect();
             if(session != null) session.disconnect();
 
-            try { fis.close(); } catch (Exception e) { /* Ignore. */ }
-            try { scpOut.close(); } catch (Exception e) { /* Ignore. */ }
-            try { scpIn.close(); } catch (Exception e) { /* Ignore. */ }
-            try { queryChannelIn.close(); } catch (Exception e) { /* Ignore. */ }
+            try {
+                fis.close();
+            } catch(Exception e) { /* Ignore. */ }
+            try {
+                scpOut.close();
+            } catch(Exception e) { /* Ignore. */ }
+            try {
+                scpIn.close();
+            } catch(Exception e) { /* Ignore. */ }
+            try {
+                queryChannelIn.close();
+            } catch(Exception e) { /* Ignore. */ }
 
         }
 

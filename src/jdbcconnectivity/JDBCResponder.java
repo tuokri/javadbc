@@ -1,6 +1,7 @@
 import org.apache.commons.dbutils.DbUtils;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -45,15 +46,26 @@ public class JDBCResponder {
 
         }
 
-        String rsString = null;
         ResultSet rs = null;
+        ResultSet schemas = null;
         Statement stmt = null;
         Connection conn = null;
+        DatabaseMetaData dbmeta = null;
 
         try {
 
             conn = DriverManager.getConnection(dbConnStr, dbUname, dbPassw);
             // System.out.println("JDBCResponder: Connected to database.");
+            // dbmeta = conn.getMetaData();
+            // schemas = dbmeta.getSchemas();
+            //
+            // while(schemas.next()) {
+            //
+            //     String tableSchema = schemas.getString(1);
+            //     String tableCatalog = schemas.getString(2);
+            //     System.out.println("TABLE SCHEMA: " + tableSchema);
+            //
+            // }
 
             try {
 
@@ -67,7 +79,7 @@ public class JDBCResponder {
 
                     System.out.println("Row " + rowCount++ + ":  ");
 
-                    for (int i = 1; i <= numberOfColumns; i++) {
+                    for(int i = 1; i <= numberOfColumns; i++) {
 
 
                         String colName = rsmd.getColumnName(i);
@@ -82,21 +94,27 @@ public class JDBCResponder {
 
                             System.out.println(rs.getDate(i));
 
+                        } else if(type == Types.TIMESTAMP) {
+
+                            System.out.println(rs.getTimestamp(i));
+
                         } else if(type == Types.REAL) {
 
                             System.out.println(rs.getDouble(i));
 
-                        } else {
+                        } else if(type == Types.INTEGER || type == Types.NUMERIC) {
 
                             System.out.println(rs.getInt(i));
+
+                        } else {
+
+                            System.out.println("UNKNWON TYPE " + type);
 
                         }
                     }
 
                     System.out.println("");
                 }
-
-                System.out.println(rsString);
 
             } catch(SQLException e) {
 
@@ -112,6 +130,7 @@ public class JDBCResponder {
 
         } finally {
 
+            DbUtils.closeQuietly(schemas);
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(conn);
