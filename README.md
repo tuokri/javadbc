@@ -14,10 +14,10 @@ This application is barebone and likely contains bugs.
 2. Open your preferred console program.
 
 
-3. Navigate to the directory. ```$ cd home/username/toldb-remote```
+3. Navigate to the directory. ```cd home/username/toldb-remote```
 
 
-4. Run the application. ```$ java -jar toldb-remote.jar```
+4. Run the application. ```java -jar toldb-remote.jar```
 
 
 5. The application will guide you through the process.
