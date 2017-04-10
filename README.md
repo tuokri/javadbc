@@ -5,7 +5,7 @@ This application is barebone and likely contains bugs.
 
 
 ## HOW TO:
-### Option 1 (easy) : Download ready to use JAR package.
+### Option 1 (easy) : Download ready to use JAR package. https://github.com/tuokri/javadbc/releases/download/0.1/toldb-remote.jar
 
 
 1. Download the JAR package to your desired directory. For example home/username/toldb-remote
