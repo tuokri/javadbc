@@ -26,6 +26,9 @@ This application is barebone and likely contains bugs.
 6. The application will ask you for your credentials and guide you through the process.
 
 
+Video instructions: https://www.youtube.com/watch?v=kLJ5XBx9mqU
+
+
 ### Option 2 (manual work) : Build from source.
 
 
