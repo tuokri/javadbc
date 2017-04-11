@@ -5,22 +5,25 @@ This application is barebone and likely contains bugs.
 
 
 ## HOW TO:
-### Option 1 (easy) : Download ready to use JAR package. This method requires Java Runtime Environment. https://github.com/tuokri/javadbc/releases/download/0.1/toldb-remote.jar
+### Option 1 (easy) : Download ready to use JAR binaries. This method requires Java Runtime Environment. https://github.com/tuokri/javadbc/releases/download/v0.2-alpha/toldb-remote-v0_2.zip
 
 
-1. Download the JAR package to your desired directory. For example home/username/toldb-remote
+1. Download the ZIP package to your desired directory. For example /home/username/toldb-remote/
 
 
-2. Open your preferred console program.
+2. Extract the ZIP.
 
 
-3. Navigate to the directory. ```cd home/username/toldb-remote```
+3. Open your preferred console program.
 
 
-4. Run the application. ```java -jar toldb-remote.jar```
+4. Navigate to the directory. ```cd home/username/toldb-remote```
 
 
-5. The application will guide you through the process.
+5. Run the application. ```java -jar toldb-remote.jar```
+
+
+6. The application will ask you for your credentials and guide you through the process.
 
 
 ### Option 2 (manual work) : Build from source.
