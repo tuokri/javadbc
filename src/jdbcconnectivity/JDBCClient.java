@@ -19,10 +19,10 @@ public class JDBCClient {
     private static final Scanner sc = new Scanner(System.in);
     private static final String[] hosts = {"st-cn0001.oulu.fi", "st-cn0002.oulu.fi", "st-cn0003.oulu.fi"};
     private static final String dbConnStr = "jdbc:oracle:thin:@(DESCRIPTION= (ADDRESS=(PROTOCOL=TCP)(HOST=toldb.oulu.fi) (PORT=1521))(CONNECT_DATA=(SID=toldb11)))";
-    private static final String lfile = "responder.jar";
     private static final String info = "PLEASE READ!\n" + "You need to use your ITEE login.\n" +
             "Your ITEE login is the one you use in ITEE computer classes.\n" + "You will also need a TOLDB username and password.\n" +
             "TOLDB database usernames and passwords are provided by course staff.";
+    private static final String lfile = "responder.jar";
 
     public static void main(String[] args) {
 
@@ -252,16 +252,20 @@ public class JDBCClient {
 
             try {
                 fis.close();
-            } catch(Exception e) { /* Ignore. */ }
+            } catch(Exception ignore) {
+            }
             try {
                 scpOut.close();
-            } catch(Exception e) { /* Ignore. */ }
+            } catch(Exception ignore) {
+            }
             try {
                 scpIn.close();
-            } catch(Exception e) { /* Ignore. */ }
+            } catch(Exception ignore) {
+            }
             try {
                 queryChannelIn.close();
-            } catch(Exception e) { /* Ignore. */ }
+            } catch(Exception ignore) {
+            }
 
         }
 
