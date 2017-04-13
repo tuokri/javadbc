@@ -70,10 +70,28 @@ public class JDBCResponder {
             try {
 
                 stmt = conn.createStatement();
-                rs = stmt.executeQuery(query);
-                ResultSetMetaData rsmd = rs.getMetaData();
-                int numberOfColumns = rsmd.getColumnCount();
+
+                if(query.toLowerCase().startsWith("create table") || query.toLowerCase().startsWith("insert into") ||
+                        query.toLowerCase().startsWith("update") || query.toLowerCase().startsWith("delete from")) {
+
+                    stmt.executeUpdate(query);
+
+                } else {
+
+                    rs = stmt.executeQuery(query);
+
+                }
+
                 int rowCount = 1;
+                int numberOfColumns = 0;
+                ResultSetMetaData rsmd = null;
+
+                if(rs != null) {
+
+                    rsmd = rs.getMetaData();
+                    numberOfColumns = rsmd.getColumnCount();
+
+                }
 
                 while(rs.next()) {
 
