@@ -9,8 +9,22 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
+/**
+ * JDBCResponder is payload that is delivered to the remote location by JDBCClient via SCP.
+ * JDBCResponder connects to the database and executes updates and queries.
+ * Database connection string, credentials and queries are provided as command line arguments.
+ *
+ * @see JDBCClient
+ */
 public class JDBCResponder {
 
+    /**
+     * @param args the argument array, where
+     *             arg[0] == database connection string
+     *             arg[1] == database username
+     *             arg[2] == database password
+     *             arg[3] == database query
+     */
     public static void main(String[] args) {
 
         String query = null;
@@ -41,6 +55,7 @@ public class JDBCResponder {
 
         } catch(Exception e) {
 
+            System.out.println("Not enough arguments provided.");
             System.out.println(e);
             System.exit(0);
 
