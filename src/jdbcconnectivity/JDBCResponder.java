@@ -86,17 +86,15 @@ public class JDBCResponder {
 
                 stmt = conn.createStatement();
 
-                if(query.toLowerCase().startsWith("create table") || query.toLowerCase().startsWith("insert into") ||
-                        query.toLowerCase().startsWith("update") || query.toLowerCase().startsWith("delete from") ||
-                        query.toLowerCase().startsWith("drop table")) {
-
-                    System.out.println("Executing update : " + query + '\n');
-                    stmt.executeUpdate(query);
-
-                } else {
+                if(query.toLowerCase().startsWith("select ")) {
 
                     System.out.println("Executing query : " + query + '\n');
                     rs = stmt.executeQuery(query);
+
+                } else {
+
+                    System.out.println("Executing update : " + query + '\n');
+                    stmt.executeUpdate(query);
 
                 }
 
@@ -141,7 +139,7 @@ public class JDBCResponder {
 
                             } else {
 
-                                System.out.println("UNKNWON TYPE " + type);
+                                System.out.println("UNKNOWN TYPE " + type);
 
                             }
                         }
