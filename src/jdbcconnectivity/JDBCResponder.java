@@ -87,7 +87,8 @@ public class JDBCResponder {
                 stmt = conn.createStatement();
 
                 if(query.toLowerCase().startsWith("create table") || query.toLowerCase().startsWith("insert into") ||
-                        query.toLowerCase().startsWith("update") || query.toLowerCase().startsWith("delete from")) {
+                        query.toLowerCase().startsWith("update") || query.toLowerCase().startsWith("delete from") ||
+                        query.toLowerCase().startsWith("drop table")) {
 
                     stmt.executeUpdate(query);
 
@@ -169,5 +170,7 @@ public class JDBCResponder {
             DbUtils.closeQuietly(conn);
 
         }
+
+        System.exit(0);
     }
 }
