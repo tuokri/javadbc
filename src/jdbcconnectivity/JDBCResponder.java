@@ -90,10 +90,12 @@ public class JDBCResponder {
                         query.toLowerCase().startsWith("update") || query.toLowerCase().startsWith("delete from") ||
                         query.toLowerCase().startsWith("drop table")) {
 
+                    System.out.println("Executing update : " + query + '\n');
                     stmt.executeUpdate(query);
 
                 } else {
 
+                    System.out.println("Executing query : " + query + '\n');
                     rs = stmt.executeQuery(query);
 
                 }
@@ -107,47 +109,49 @@ public class JDBCResponder {
                     rsmd = rs.getMetaData();
                     numberOfColumns = rsmd.getColumnCount();
 
-                }
+                } else {
 
-                while(rs.next()) {
+                    while(rs.next()) {
 
-                    System.out.println("Row " + rowCount++ + ":  ");
+                        System.out.println("Row " + rowCount++ + ":  ");
 
-                    for(int i = 1; i <= numberOfColumns; i++) {
+                        for(int i = 1; i <= numberOfColumns; i++) {
 
 
-                        String colName = rsmd.getColumnName(i);
-                        System.out.print("\t" + colName + ":\t");
+                            String colName = rsmd.getColumnName(i);
+                            System.out.print("\t" + colName + ":\t");
 
-                        int type = rsmd.getColumnType(i);
-                        if(type == Types.VARCHAR || type == Types.CHAR) {
+                            int type = rsmd.getColumnType(i);
+                            if(type == Types.VARCHAR || type == Types.CHAR) {
 
-                            System.out.println(rs.getString(i));
+                                System.out.println(rs.getString(i));
 
-                        } else if(type == Types.DATE) {
+                            } else if(type == Types.DATE) {
 
-                            System.out.println(rs.getDate(i));
+                                System.out.println(rs.getDate(i));
 
-                        } else if(type == Types.TIMESTAMP) {
+                            } else if(type == Types.TIMESTAMP) {
 
-                            System.out.println(rs.getTimestamp(i));
+                                System.out.println(rs.getTimestamp(i));
 
-                        } else if(type == Types.REAL) {
+                            } else if(type == Types.REAL) {
 
-                            System.out.println(rs.getDouble(i));
+                                System.out.println(rs.getDouble(i));
 
-                        } else if(type == Types.INTEGER || type == Types.NUMERIC) {
+                            } else if(type == Types.INTEGER || type == Types.NUMERIC) {
 
-                            System.out.println(rs.getInt(i));
+                                System.out.println(rs.getInt(i));
 
-                        } else {
+                            } else {
 
-                            System.out.println("UNKNWON TYPE " + type);
+                                System.out.println("UNKNWON TYPE " + type);
 
+                            }
                         }
+
+                        System.out.println("");
                     }
 
-                    System.out.println("");
                 }
 
             } catch(SQLException e) {
