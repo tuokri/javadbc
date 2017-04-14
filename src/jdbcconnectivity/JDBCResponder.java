@@ -108,9 +108,6 @@ public class JDBCResponder {
 
                     rsmd = rs.getMetaData();
                     numberOfColumns = rsmd.getColumnCount();
-
-                } else {
-
                     while(rs.next()) {
 
                         System.out.println("Row " + rowCount++ + ":  ");
@@ -151,6 +148,10 @@ public class JDBCResponder {
 
                         System.out.println("");
                     }
+
+                } else {
+
+                    System.out.println("Update executed.\n");
 
                 }
 
