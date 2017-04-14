@@ -12,6 +12,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Scanner;
 
+/**
+ * JDBCClient act as the GUI/CLI client running at the user's home location.
+ * This is basically a filthy trick to get remote access to TOLDB database from outside of UO network.
+ * <p>
+ * How this works:
+ *  1. Connect via SSH to st-cnXXXX.oulu.fi remote server.<p>
+ *  2. Create directory on remote server. Example: /home/user/remotedb<p>
+ *  3. Transfer responder.jar (which is {@link JDBCResponder} packaged) to remote directory via SCP.<p>
+ *  4. Begin user input while loop for database queries.<p>
+ *  5. Execute queries by executing responder.jar on remote location via SSH:<p>
+ *  -java -jar /home/user/remotedb/responder.jar CONNSTR DBUNAME DPASSW "SELECT * FROM X"<p>
+ *  6. Receive response from responder and print it.<p>
+ *
+ * @see JDBCResponder
+ */
 public class JDBCClient {
 
     private static final int bufferSize = 1024;
@@ -24,6 +39,9 @@ public class JDBCClient {
             "TOLDB database usernames and passwords are provided by course staff.";
     private static final String lfile = "responder.jar";
 
+    /**
+     * The main method for user interaction and I/O handling.
+     */
     public static void main(String[] args) {
 
         JSch jsch = new JSch();
@@ -159,7 +177,7 @@ public class JDBCClient {
             String[] options = new String[]{"OK", "Cancel"};
             int option = JOptionPane.showOptionDialog(dbConnStrFrame, pwPanel, "Database Password",
                     JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-            if(option == 0) // pressing OK button
+            if(option == 0)
             {
 
                 dbPassw = new String(pass.getPassword());
@@ -233,9 +251,10 @@ public class JDBCClient {
 
                         Thread.sleep(500);
 
-                    } catch(Exception ee) {
-                    }
+                    } catch(Exception ee) {}
                 }
+
+                if(queryChannel != null) queryChannel.disconnect();
             }
 
         } catch(Exception e) {
